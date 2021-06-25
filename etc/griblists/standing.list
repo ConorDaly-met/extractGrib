@@ -1,0 +1,16 @@
+# Standing orders list for knmi files
+#
+# This file may not contain blank lines
+#
+# MEMORY keyword postprocesses data into memory.  This is used later to extract post-processed data to file.
+# A MEMORY keyword must precede the first extraction of postprocessed data to file
+#MEMORY		-C centre	-T	-p Parameter list
+# -T implies store to memory.
+#
+# A grib_extension is used to generate a file of the form: fcYYYYMMDDHH+SSS.grib_extension
+# Parameter list and Projection/sub-domain entries must exist in etc/namelist_inc/centre/
+#grib_extension     -C centre -g grib1|2 -k packingType  -p Parameter list -r Projection|sub-domain
+MEMORY       -C knmi -T             -p en_B-p
+grib2_enIoI  -C knmi -g 2 -k ccsds  -p en_B-b -r IofIE
+MEMORY       -C knmi -T             -p en_B-p
+grib2_en_10k -C knmi -g 2 -k ccsds  -p en_B-b -r IRELAND25-10k

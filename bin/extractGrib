@@ -1,0 +1,289 @@
+#!/bin/bash
+#
+# Name:		extractGrib
+# Author:	Conor Daly <conor.daly@met.ie>
+# Date:		17-jun-2021
+#
+# Purpose:	Run the extraction of forecast data from Harmonie NWP output
+#
+# Description:	Constructs dynamic namelists for gl for extraction of NWP 
+#		from FA to GRIB.  Processes any griblist/<centre>/standing.list 
+#		found in the user area.  Processes any griblist/<centre>/user.list
+#		found in the user area if called with a 'user' switch.  Processes
+#		griblist/<centre>/user.list if called with 'centre' switch.
+#
+. header.sh
+
+# My bindir
+mybindir=$(dirname $0)
+extractor="${mybindir}/extract_FA.sh"
+#extractor="${mybindir}/extract_FA.sh -n"
+
+# Binary
+BINARY=$BINDIR/gl
+# Debug level
+PRINTLEV=0
+
+# Input forecast
+FCSTPATH=${FCSTPATH-.}
+GETIOSERV=${GETIOSERV-no}
+MBRPREFIX=${MBRPREFIX-}
+MBRPATH=${MBRPATH-.}
+EXPT=${EXPT-HARM}
+DOMAIN=${DOMAIN-IRELAND25_090}
+TYPLIST=${TYPLIST-"fp his"}
+EZONE=${EZONE-11}
+
+# Forecast date/step/member etc
+DTG=${DTG-2021061006}
+STEP=${STEP-3}
+ENSMBR=${ENSMBR--1}
+ENSCTL=${ENSCTL--1}
+ENSTYP=${ENSTYP-0}
+NUMMBR=${NUMMBR-16}
+
+# User area
+USERAREA=${USERAREA-etc/griblists}
+
+function usage() {
+cat << USAGE
+
+Usage:	$0 [-a <USERAREA>] [-f <FCST/PATH>] [-m] [-t <type> [-t <type>]] [-h] [-i] [-k] [-n]
+	$0 -h
+
+	Extracts requested dataset(s) from Harmonie FA outputs using user-supplied request lists.
+
+	-a <USERAREA> 		Sets the source area for user lists (currently: ${USERAREA})
+	-f <FCST/PATH> 		Sets the input path for the forecast (currently: ${FCSTPATH})
+	-m			Sets a member path of the form mbrXXX to be appended to <FCST/PATH>
+	-t <type> 		Sets the input file type(s) for the forecast (currently: ${TYPLIST})
+					 Available types are	fp  - fullpos
+								his - history
+								sfx - SURFEX
+
+	-i		Fetch the forecast files directly from the I/O servers
+	-k		Do not delete the namelist
+	-n		Dry-run.  Does not execute the gl run, just makes and displays the namelist
+
+	-h		Show this help
+
+	Environment Variables:
+
+	extractGrib expects the following environment variables to be set:
+
+		Variable	Current Value	Comment
+		FCSTPATH	${FCSTPATH}
+						Path to the input forecast
+		EXPT		${EXPT}	
+						The experiment name
+		DOMAIN		${DOMAIN}
+						The forecast domain name
+		EZONE		${EZONE}
+						The boundary zone to remove from his/sfx files
+
+		DTG		${DTG}	
+						The date/time group for the forecast
+		STEP		${STEP}	
+						The forecast step
+		ENSMBR		${ENSMBR}
+						The ensemble member
+		NUMMBR		${NUMMBR}
+						The number of forecasts in the ensemble
+
+USAGE
+}
+
+function isOdd() {
+	# returns 1 if odd, 0 otherwise
+	TMP=$(($1 / 2))
+	TMP2=$(($TMP * 2))
+	REM=$(($1 - $TMP2))
+	return $REM
+}
+
+function makeTEF() {
+	# Returns 0 for input <= 0, 2 for even, 3 for odd
+	if [ $1 -le 0 ]; then
+		return $1
+	else
+		isOdd $1
+		TEF=$(($? + 2))
+		return $TEF
+	fi
+}
+
+function getIOFILES() {
+	# Get a list of files from the I/O nodes
+	local TYP=$1
+	IOPATH="${FCSTPATH}/${MBRPATH}/forecast"
+	case "$TYP" in
+		fp)
+			FPATTERN="PF${EXPT}${DOMAIN}+0${STEP}*"
+			EPATTERN=""
+		;;
+		his)
+			FPATTERN="ICMSH${EXPT}+0${STEP}*"
+			EPATTERN="ICMSH${EXPT}+0${STEP}*.sfx*"
+		;;
+		sfx)
+			FPATTERN="ICMSH${EXPT}+0${STEP}*.sfx*"
+			EPATTERN=""
+		;;
+	esac
+#set -x
+	if [ -z ${EPATTERN} ]; then
+		FNAMELIST=$(find ${IOPATH} -name ${FPATTERN} | grep io_serv | sort)
+	else
+		FNAMELIST=$(find ${IOPATH} -name ${FPATTERN} -not -name ${EPATTERN} | grep io_serv | sort)
+	fi
+#set +x
+	echo "find ${IOPATH} -name ${FPATTERN}"
+	echo "Fnamelist: $FNAMELIST"
+}
+
+function getINFILE() {
+	# Get a list of complete FA files
+	local TYP=$1
+	case "$TYP" in
+		fp)
+			FNAME="${FCSTPATH}/${MBRPATH}/PF${EXPT}${DOMAIN}+0${STEP}"
+		;;
+		his)
+			FNAME="${FCSTPATH}/${MBRPATH}/ICMSH${EXPT}+0${STEP}"
+		;;
+		sfx)
+			FNAME="${FCSTPATH}/${MBRPATH}/ICMSH${EXPT}+0${STEP}.sfx"
+		;;
+	esac
+	echo "Fname: $FNAME"
+}
+
+function outDir() {
+	# Create a per-Centre specific output directory
+	echo $1 | sed -e 's@.*\([a-z][a-z][a-z][a-z]\)/[^/]*@\1@'
+}
+
+echo "Binary: $BINARY"
+
+# define basic extract command
+myextractcmd="${extractor}"
+
+# Commandline args handling
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-h)
+			usage
+			exit
+		;;
+#		-h)
+#			myextractcmd+=" $1"
+#			shift
+#		;;
+		-a)
+			export USERAREA=$2
+			shift;shift
+		;;
+		-f)
+			FCSTPATH=$2
+			shift;shift
+		;;
+		-i)
+			GETIOSERV="yes"
+			shift
+		;;
+		-k)
+			myextractcmd+=" $1"
+			shift
+		;;
+		-m)
+			MBRPREFIX="mbr"
+			shift
+		;;
+		-n)
+			myextractcmd+=" $1"
+			shift
+		;;
+		-t)
+			TYPLIST+=" $2"
+			shift;shift
+		;;
+		*)
+			echo "unrecognised arg: $1"
+			shift
+			exit
+		;;
+	esac
+done
+
+# Date time step handling
+YMD=$(echo $DTG | cut -c1-8)
+HH=$(echo $DTG | cut -c9-10)
+if [ "$GETIOSERV" == "yes" ]; then
+	FCSTPATH+="/${YMD}_${HH}"
+fi
+STEP=$(printf "%03d" $STEP)
+
+# Ensemble member handling
+makeTEF $ENSMBR
+ENSTYP=$?
+echo "MBR: $MBRPREFIX $MBRPATH"
+if [ ! -z "${MBRPREFIX}" -a "${MBRPATH}" == "." ]; then
+	# Pad ENSMBR with leading zeros to 3 digits
+	MBRPATH="${MBRPREFIX}$(echo 00${ENSMBR} | sed -e 's/.*\([0-9][0-9][0-9]$\)/\1/')"
+fi
+
+myextractcmd+=" -m"
+myextractcmd+=" -d ${DTG}"
+myextractcmd+=" -s ${STEP}"
+myextractcmd+=" -e ${ENSMBR}:${NUMMBR}:${ENSTYP}"
+
+
+# List of input files
+FILECOUNT=0
+echo $TYPLIST
+TYPLIST=$(echo $TYPLIST | tr , ' ')
+echo $TYPLIST
+for TYP in ${TYPLIST} ; do
+	if [ "$GETIOSERV" == "yes" ]; then
+		echo getIOFILES $TYP
+		getIOFILES $TYP
+	else
+		echo getINFILE $TYP
+		getINFILE $TYP
+		FNAMELIST=${FNAME}
+	fi
+	echo $FNAMELIST
+	for FNAME in $FNAMELIST; do
+		if [ -f $FNAME ]; then
+			myextractcmd+=" -f ${FNAME}"
+			FILECOUNT=$(($FILECOUNT + 1))
+		else
+			echo "No file found: ${FNAME}"
+		fi
+	done
+done
+if [ $FILECOUNT -eq 0 ]; then
+	echo
+	echo "Error, no input file(s) found"
+	echo
+	exit 1
+fi
+
+for SLIST in $(find ${USERAREA} -name standing.list -o -name user.list); do
+  #SLIST=${UD}/standing.list
+  if [ -f ${SLIST} ]; then
+    listtype=$(basename ${SLIST} .list)
+    extractcmd="${myextractcmd} -g ${SLIST}"
+    outDir ${SLIST}
+    OUTDIR=$(outDir ${SLIST})
+    extractcmd+=" -o ${MBRPATH}/${OUTDIR}"
+  
+    echo ${extractcmd}
+    echo "Log: ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log" 
+    echo
+    ${extractcmd} 2>&1 | tee ${MBRPATH}/${OUTDIR}/extractGrib_{listtype}_${STEP}.log 
+    echo
+    echo ${extractcmd}
+  fi
+
+done

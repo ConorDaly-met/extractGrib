@@ -6,6 +6,7 @@ function usage() {
 cat << USAGE
 
 Usage:	$0 [-b] -o <path/to/namelists/> [-n <namelist_name>] <path/to/parameter.list> 
+	$0 -h
 
 	Reads <path/to/parameter.list> and outputs appropriate namelist entries for
 		each of 'direct' and 'postprocessed' data from ICMSHHARM and PFHARM forecast files.
@@ -19,6 +20,8 @@ Usage:	$0 [-b] -o <path/to/namelists/> [-n <namelist_name>] <path/to/parameter.l
 	-n Namelist name.
 		This will replace the 'parameter' element of the output filename.
 
+	-h Show this help
+
 USAGE
 }
 
@@ -30,6 +33,10 @@ fi
 DDSET='-d -p'
 while [ $# -gt 1 ]; do
 	case "$1" in
+		-h)
+			usage
+			exit
+		;;
 		-b)
 			NAMEBOTH=true
 			DDSET+=' -b'

@@ -1,5 +1,20 @@
 #!/bin/bash
 
+if [ $# -lt 1 -o "$1" == "-h" ]; then
+cat << USAGE
+
+Usage:	$0 </path/to/grib.file>
+	$0 -h
+
+	Extracts shortName,typeOfLevel,stepType,level from GRIB and translates to gl namelist
+	
+	-h	Show this help
+
+USAGE
+exit
+fi
+
+
 # Extracts shortName,typeOfLevel,stepType,level from GRIB and translates to gl namelist
 INFILE=$1
 

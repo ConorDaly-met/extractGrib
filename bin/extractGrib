@@ -43,7 +43,7 @@ ENSTYP=${ENSTYP-0}
 NUMMBR=${NUMMBR-16}
 
 # User area
-USERAREA=${USERAREA-etc/griblists}
+USERAREA=${USERAREA-~/hm_home/extractGrib/etc/griblists}
 
 function usage() {
 cat << USAGE
@@ -180,7 +180,7 @@ while [ $# -gt 0 ]; do
 #			shift
 #		;;
 		-a)
-			export USERAREA=$2
+			USERAREA=$2
 			shift;shift
 		;;
 		-f)
@@ -214,6 +214,9 @@ while [ $# -gt 0 ]; do
 		;;
 	esac
 done
+
+# User area
+export USERAREA
 
 # Date time step handling
 YMD=$(echo $DTG | cut -c1-8)

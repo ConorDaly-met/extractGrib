@@ -26,6 +26,7 @@ function usage() {
 cat << USAGE
 
 Usage:	$0 (-d|p|b) (-I|P) <path/to/param.list>
+	$0 -h
 
 	Read param.list and write out a gl namelist stanza for the contained parameters.
 
@@ -35,6 +36,8 @@ Usage:	$0 (-d|p|b) (-I|P) <path/to/param.list>
 
 	-I	ICMSHHARM... is the source FA file
 	-P	PFHARM... is the source FA file
+
+	-h	Show this help
 
 USAGE
 }

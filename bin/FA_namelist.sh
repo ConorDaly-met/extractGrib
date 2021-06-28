@@ -8,7 +8,7 @@ NCDEFS=etc/AromeMetCoOpGribReaderConfig_Trg_tmp_pr_cl_th_IE.xml
 bindir=$(dirname $0)
 INCDIRBASE=${INCDIRBASE-${bindir}/../etc/namelist_inc}
 if [ ! -z "${USERAREA}" ]; then
-	INCDIR=$(echo ${USERAREA} | sed -e 's@/griblists/.*@/namelist_inc@')
+	INCDIR=$(echo ${USERAREA} | sed -e 's@/griblists.*@/namelist_inc@')
 fi
 INCDIR=${INCDIR-etc/namelist_inc}
 CENTRE=""

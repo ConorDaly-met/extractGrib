@@ -281,7 +281,7 @@ for SLIST in $(find ${USERAREA} -name standing.list -o -name user.list); do
     echo ${extractcmd}
     echo "Log: ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log" 
     echo
-    ${extractcmd} 2>&1 | tee ${MBRPATH}/${OUTDIR}/extractGrib_{listtype}_${STEP}.log 
+    ${extractcmd} 2>&1 | tee ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log 
     echo
     echo ${extractcmd}
   fi

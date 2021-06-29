@@ -266,9 +266,9 @@ CMD="$GL -igd -p -n ${NAMELIST}"
 if [ $DRYRUN != true ]; then
   echo
   echo "Namelist used: $NAMELIST"
-  echo "###################################################"
+  echo "############ START of NAMELIST ####################"
   cat $NAMELIST
-  echo "###################################################"
+  echo "############ END   of NAMELIST ####################"
   echo
   $CMD
   STATUS=$?
@@ -285,9 +285,9 @@ else
 #  echo "	$CMD"
 #  KEEPNAM=true
   echo
-  echo "###################################################"
+  echo "############ START of NAMELIST ####################"
   cat $NAMELIST
-  echo "###################################################"
+  echo "############ END   of NAMELIST ####################"
 fi
 echo
 if [ $KEEPNAM == true ]; then

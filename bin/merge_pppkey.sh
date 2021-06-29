@@ -137,7 +137,7 @@ function sort_keys() {
 				#echo "         ${Keys[$j]}"
 				if [ ${Keys[$i]} == ${Keys[$j]} ]; then
 					#echo "duplicate found"
-					#skey=false
+					skey=false
 					break
 				fi
 			done

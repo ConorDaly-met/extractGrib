@@ -1,7 +1,7 @@
 # This is a user list for the purposes of specifying non-standing user requests.
 # Entries in this list are not intended to be permanent but instead to have limited lifetimes.
 #
-# This file may not contain blank lines
+# Blank lines and lines beginning with '#' are ignored
 #
 # MEMORY keyword postprocesses data into memory.  This is used later to extract post-processed data to file.
 # A MEMORY keyword must precede the first extraction of postprocessed data to file
@@ -9,8 +9,8 @@
 # -T implies store to memory.
 #
 # Note that <grib_extension> in this list will result in output filenames of the form: 
-# 	fcYYYYMMDDHH+SSS.USER_grib_extension
+# 	fcYYYYMMDDHH+SSSUSER_grib_extension
 # This is intended to avoid accidental collision with entries from the standing.list. 
 MEMORY       -C knmi -T             -p en_B-p
-grib2_enIoI  -C knmi -g 2 -k ccsds  -p en_B-b -r IofIE
+grib2_enIoI  -C knmi -g 2 -k ccsds  -p en_B-b -r IofIE # Trailing comments are ignored
 

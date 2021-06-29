@@ -232,26 +232,31 @@ fi
 if [ ! -f $GRIBLIST ]; then
   echo "No griblist found"
 else
-exec < $GRIBLIST
+  # Sort griblist to place 'MEMORY' entries first
+  TMPGRIBLIST=$(basename $GRIBLIST)$$
+  egrep -i  '^memory[[:space:]]'       ${GRIBLIST} >  ${TMPGRIBLIST}
+  egrep -iv '^memory[[:space:]]|^#|^$' ${GRIBLIST} >> ${TMPGRIBLIST}
+  exec < $TMPGRIBLIST
 
-read GBLIST
-while [ "X$GBLIST" != "X" ]; do
-  COMMENT=$(echo $GBLIST | cut -c1)
-  if [ "$COMMENT" != '#' ]; then
-    GRB=$(echo $GBLIST | cut -f1 -d' ')
-    ARGS=$(echo $GBLIST | cut -f2- -d' ')
-    makefilename
-    if [ "$GRB" == "memory" -o "$GRB" == "MEMORY" ]; then
-      echo namelist $ARGS $MEMORY
-      namelist $ARGS $MEMORY >> ${NAMELIST}
-    else
-      echo namelist -d $DTG -s $HHH $ENSEMBLE $ARGS $INCFILE $MEMORY -f ${OUTPATH}/$FILENAME
-      namelist -d $DTG -s $HHH $ENSEMBLE $ARGS $INCFILE $MEMORY -f ${OUTPATH}/$FILENAME >> ${NAMELIST}
+  read GBLIST
+  while [ "X$GBLIST" != "X" ]; do
+    COMMENT=$(echo $GBLIST | cut -c1)
+    if [ "$COMMENT" != '#' ]; then
+      GRB=$(echo $GBLIST | cut -f1 -d' ')
+      ARGS=$(echo $GBLIST | cut -f2- -d' ')
+      makefilename
+      if [ "$GRB" == "memory" -o "$GRB" == "MEMORY" ]; then
+        echo namelist $ARGS $MEMORY
+        namelist $ARGS $MEMORY >> ${NAMELIST}
+      else
+        echo namelist -d $DTG -s $HHH $ENSEMBLE $ARGS $INCFILE $MEMORY -f ${OUTPATH}/$FILENAME
+        namelist -d $DTG -s $HHH $ENSEMBLE $ARGS $INCFILE $MEMORY -f ${OUTPATH}/$FILENAME >> ${NAMELIST}
+      fi
     fi
-  fi
-
-read GBLIST
-done
+  
+  read GBLIST
+  done
+  rm $TMPGRIBLIST
 fi
 
 merge_pppkey ${NAMELIST}

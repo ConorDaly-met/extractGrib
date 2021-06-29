@@ -163,7 +163,7 @@ function outDir() {
 	echo $1 | sed -e 's@.*\([a-z][a-z][a-z][a-z]\)/[^/]*@\1@'
 }
 
-echo "Binary: $BINARY"
+#echo "Binary: $BINARY"
 
 # define basic extract command
 myextractcmd="${extractor}"

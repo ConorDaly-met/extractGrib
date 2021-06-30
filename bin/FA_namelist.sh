@@ -303,9 +303,9 @@ function setCenter() {
 			CENTER=99
 			PROCESS=43
 		;;
-		dmi)
-			CENTER=9999
-			PROCESS=43
+		ekmi)
+			CENTER=94
+			PROCESS=80
 		;;
 		imo)
 			CENTER=999

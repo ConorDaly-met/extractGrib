@@ -1,1 +1,1 @@
- output_format = 'GRIB1̈́',
+ output_format = 'GRIB1',

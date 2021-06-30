@@ -26,13 +26,16 @@ INFILE=$1
 echo "# $INFILE"
 
 grib_dump $INFILE | head -n 180 \
-	| egrep "D?InMetres|Nx|Ny|FirstGrid|Latin.InDegrees|LoVInDegrees|gridType" \
+	| egrep "D?InMetres|N[ijxy]|FirstGrid|Latin.InDegrees|LoVInDegrees|gridType|OfSouthernPoleInDegrees|DirectionIncrementInDegrees" \
 	| grep -v '#' | sort | uniq \
 	| sed \
-	      -e 's/Nx/outgeo%nlon/'                                     -e 's/Ny/outgeo%nlat/' \
+	      -e 's/N[ix]/outgeo%nlon/'                                  -e 's/N[jy]/outgeo%nlat/' \
               -e "s/gridType = /outgeo%gridtype = '/"                    -e "s/gridtype = '\(.*\)$/gridtype = '\1'/" \
 	      -e 's/DxInMetres = \([0-9]*\)/outgeo%dlon = \1./'          -e 's/DyInMetres = \([0-9]*\)/outgeo%dlat = \1./' \
+	      -e 's/iDirectionIncrementInDegrees = \([0-9]*\)/outgeo%dlon = \1./'          -e 's/jDirectionIncrementInDegrees = \([0-9]*\)/outgeo%dlat = \1./' \
 	      -e 's/Latin1InDegrees = \([0-9.]*\)/outgeo%projlat = \1./' -e 's/Latin2InDegrees = \([0-9.]*\)/outgeo%projlat2 = \1./' \
+	      -e 's/latitudeOfSouthernPoleInDegrees = \([-0-9.]*\)/outgeo%polat = \1./' \
+	      -e 's/longitudeOfSouthernPoleInDegrees = \([-0-9.]*\)/outgeo%polon = \1./' \
 	      -e 's/latitudeOfFirstGridPointInDegrees = \([-0-9.]*\)/outgeo%south = \1./' \
 	      -e 's/longitudeOfFirstGridPointInDegrees = \([-0-9.]*\)/outgeo%west = \1./' \
 	      -e 's/LoVInDegrees = \([0-9]*\)/outgeo%projlon = \1./' \

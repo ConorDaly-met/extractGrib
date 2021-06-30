@@ -274,14 +274,20 @@ function merge_pppkey() {
 #echo "Merging $NAML"
 merge_pppkey $NAML
 
-sort_keys
-PPPPOS=$( find_pppkey)
-HPOS=$(($PPPPOS -1))
-TPOS=$(($PPPPOS +1))
-head -n $HPOS $NAMOUTL
-#write_removedups
-write_pppkey
-#write_removedups
-tail -n +$TPOS $NAMOUTL
+if [ $PPPKEYFOUND != true ]; then
+	# No pppkey was found, output original namelist
+	cat $NAML
+else
+	# pppkey was found, output modified namelist
+	sort_keys
+	PPPPOS=$( find_pppkey)
+	HPOS=$(($PPPPOS -1))
+	TPOS=$(($PPPPOS +1))
+	head -n $HPOS $NAMOUTL
+	#write_removedups
+	write_pppkey
+	#write_removedups
+	tail -n +$TPOS $NAMOUTL
+fi
 rm $NAMOUTL
 #echo "Found pppkey stanza at $PPPPOS"

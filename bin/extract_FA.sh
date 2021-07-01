@@ -234,7 +234,7 @@ if [ ! -f $GRIBLIST ]; then
 else
   # Sort griblist to place 'MEMORY' entries first
   TMPGRIBLIST=$(basename $GRIBLIST)$$
-  egrep -i  '^memory[[:space:]]'       ${GRIBLIST} >  ${TMPGRIBLIST}
+  egrep -i  '^memory[[:space:]]'       ${GRIBLIST} | sed -e 's/#.*//' >  ${TMPGRIBLIST}
   egrep -iv '^memory[[:space:]]|^#|^$' ${GRIBLIST} | sed -e 's/#.*//' >> ${TMPGRIBLIST}
   exec < $TMPGRIBLIST
 

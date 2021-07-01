@@ -32,6 +32,7 @@ MBRPATH=${MBRPATH-.}
 EXPT=${EXPT-HARM}
 DOMAIN=${DOMAIN-IRELAND25_090}
 TYPLIST=${TYPLIST-"fp his"}
+TYPCOUNT=0
 EZONE=${EZONE-11}
 
 # Forecast date/step/member etc
@@ -204,7 +205,12 @@ while [ $# -gt 0 ]; do
 			shift
 		;;
 		-t)
-			TYPLIST+=" $2"
+			if [ $TYPCOUNT -eq 0 ]; then
+				TYPLIST="$2"
+			else
+				TYPLIST+=" $2"
+			fi
+			TYPCOUNT=$(($TYPCOUNT + 1))
 			shift;shift
 		;;
 		*)

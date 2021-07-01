@@ -211,7 +211,7 @@ if [ -f $NAMELIST ]; then
 fi
 
 echo "$NUMFILES received:"
-if [ $NUMFILES -gt 1 ]; then
+if [ $NUMFILES -gt 1 -o "$FROMMEMORY" == "true" ]; then
     MEMORY=-M
     NUMFILES=$(($NUMFILES + 1))
 fi

@@ -1,9 +1,6 @@
 #!/bin/bash
 module purge
-module load gl cdo
-export FIMEX=/home/cdaly/cdtemp/gridpp/bin/fimex
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/cdaly/cdtemp/gridpp/lib/:/home/cdaly/cdtemp/gridpp/lib64
-NCDEFS=etc/AromeMetCoOpGribReaderConfig_Trg_tmp_pr_cl_th_IE.xml
+module load gl
 
 bindir=$(dirname $0)
 INCDIRBASE=${INCDIRBASE-${bindir}/../etc/namelist_inc}

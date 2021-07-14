@@ -1,6 +1,6 @@
 #!/bin/bash
-module purge
-module load gl
+#module purge
+#module load gl
 
 bindir=$(dirname $0)
 INCDIRBASE=${INCDIRBASE-${bindir}/../etc/namelist_inc}

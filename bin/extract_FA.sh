@@ -168,7 +168,8 @@ function makefilename() {
 	if [ "$UUU" == "standing" ]; then
 		UUU=""
 	else
-		UUU=${UUU^^}_
+		#UUU=${UUU^^}_
+		UUU=$(echo ${UUU}_ | tr [:lower:] [:upper:])
 	fi
 	FILENAME="${FILEROOT}+${HHH}${UUU}${GRB}"
 }

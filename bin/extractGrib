@@ -50,10 +50,13 @@ NUMMBR=${NUMMBR-16}
 USERAREA=${USERAREA-~/hm_home/extractGrib/etc/griblists}
 
 function usage() {
+if [ "X$1" == "Xmanual" ]; then
+	less ${mybindir}/../README.md
+else
 cat << USAGE
 
 Usage:	$0 [-a <USERAREA>] [-f <FCST/PATH>] [-m] [-t <type> [-t <type>]] [-h] [-i] [-k] [-n]
-	$0 -h
+	$0 -h [manual]
 
 	Extracts requested dataset(s) from Harmonie FA outputs using user-supplied request lists.
 
@@ -70,6 +73,7 @@ Usage:	$0 [-a <USERAREA>] [-f <FCST/PATH>] [-m] [-t <type> [-t <type>]] [-h] [-i
 	-n		Dry-run.  Does not execute the gl run, just makes and displays the namelist
 
 	-h		Show this help
+	-h manual	Displays the README.md file
 
 	Environment Variables:
 
@@ -95,6 +99,7 @@ Usage:	$0 [-a <USERAREA>] [-f <FCST/PATH>] [-m] [-t <type> [-t <type>]] [-h] [-i
 						The number of forecasts in the ensemble
 
 USAGE
+fi
 }
 
 function isOdd() {
@@ -176,7 +181,11 @@ myextractcmd="${extractor}"
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-h)
-			usage
+			if [ $# -gt 1 -a "X$2" == "Xmanual" ]; then
+				usage manual
+			else
+				usage
+			fi
 			exit
 		;;
 #		-h)

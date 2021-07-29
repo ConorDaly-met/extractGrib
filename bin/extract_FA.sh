@@ -153,7 +153,7 @@ function fileroot() {
 }
 
 function makeHHH() {
-	STEP=$(echo $STEP | sed -e 's/^0*//')
+    STEP=$(echo $STEP | sed -e 's/^0*\([0-9]\)/\1/')
 	if [ $STEP -lt 10 ]; then
 		HHH="00$(($STEP))"
 	elif [ $STEP -lt 100 ]; then

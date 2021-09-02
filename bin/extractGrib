@@ -167,6 +167,48 @@ function getINFILE() {
 	echo "Fname: $FNAME"
 }
 
+function waitFor() {
+	# Wait for a file to appear and to stop changing size
+	# Wait for up to WTIMEOUT sec for the file to appear
+	# Check size change every 3 sec up to remaining WTIMEOUT x 3
+	# until file stops changing.
+	local WTIMEOUT=60
+	local WFILE=$1
+	local WCOUNT=0
+	local WSIZE=1
+	local LSIZE=0
+
+	echo -n "Awaiting $WFILE "
+	while [ ! -f $WFILE ]; do
+		sleep 1
+		echo -n "."
+		WCOUNT=$(($WCOUNT + 1))
+		if [ $WCOUNT -gt $WTIMEOUT ]; then
+			echo " TIMEOUT"
+			return 1
+		fi
+	done
+	echo
+	echo -n "Checking file size"
+	while [ $LSIZE -ne $WSIZE ]; do
+		LSIZE=$WSIZE
+		WSIZE=$(stat -t $WFILE | cut -f2 -d' ')
+		if [ $LSIZE -eq $WSIZE ]; then
+			echo
+			echo "$WSIZE"
+			return 0
+		fi
+		sleep 3
+		echo -n "."
+		WCOUNT=$(($WCOUNT + 1))
+		if [ $WCOUNT -gt $WTIMEOUT ]; then
+			echo " TIMEOUT"
+			return 1
+		fi
+	done
+	echo
+}
+
 function outDir() {
 	# Create a per-Centre specific output directory
 	echo $1 | sed -e 's@.*\([a-z][a-z][a-z][a-z]\)/[^/]*@\1@'
@@ -242,7 +284,7 @@ HH=$(echo $DTG | cut -c9-10)
 if [ "$GETIOSERV" == "yes" ]; then
 	FCSTPATH+="/${YMD}_${HH}"
 fi
-STEP=$(printf "%03d" $STEP)
+STEP=$(printf "%03d" $(echo $STEP | sed -e 's/^00*//'))
 
 # Ensemble member handling
 makeTEF $ENSMBR
@@ -275,7 +317,8 @@ for TYP in ${TYPLIST} ; do
 	fi
 	echo $FNAMELIST
 	for FNAME in $FNAMELIST; do
-		if [ -f $FNAME ]; then
+		waitFor $FNAME
+		if [ $? -eq 0 -a -f $FNAME ]; then
 			myextractcmd+=" -f ${FNAME}"
 			FILECOUNT=$(($FILECOUNT + 1))
 		else

@@ -346,6 +346,9 @@ done
     extractcmd+=" -o ${MBRPATH}"
   
     echo ${extractcmd}
+    if [ ! -d ${MBRPATH} ]; then
+	mkdir -p ${MBRPATH}
+    fi
     echo "Log: ${MBRPATH}/extractGrib_${STEP}.log" 
     echo
     ${extractcmd} 2>&1 | tee ${MBRPATH}/extractGrib_${STEP}.log 

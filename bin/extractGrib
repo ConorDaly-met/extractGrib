@@ -12,7 +12,7 @@
 #		found in the user area if called with a 'user' switch.  Processes
 #		griblist/<centre>/user.list if called with 'centre' switch.
 #
-. header.sh
+[ -f header.sh ] && . header.sh
 
 # Need to set ulimit unlimited
 ulimit -s unlimited
@@ -211,7 +211,7 @@ function waitFor() {
 
 function outDir() {
 	# Create a per-Centre specific output directory
-	echo $1 | sed -e 's@.*\([a-z][a-z][a-z][a-z]\)/[^/]*@\1@'
+	grep -v '#' $1 | grep -- '-C ' | sed -e 's@.*-C \([a-z][a-z][a-z][a-z]\) [^/]*@\1@'
 }
 
 #echo "Binary: $BINARY"
@@ -333,21 +333,22 @@ if [ $FILECOUNT -eq 0 ]; then
 	exit 1
 fi
 
+extractcmd="${myextractcmd}"
 for SLIST in $(find ${USERAREA} -name standing.list -o -name user.list); do
   #SLIST=${UD}/standing.list
   if [ -f ${SLIST} ]; then
     listtype=$(basename ${SLIST} .list)
-    extractcmd="${myextractcmd} -g ${SLIST}"
+    extractcmd+=" -g ${SLIST}"
     outDir ${SLIST}
     OUTDIR=$(outDir ${SLIST})
-    extractcmd+=" -o ${MBRPATH}/${OUTDIR}"
+  fi
+done
+    extractcmd+=" -o ${MBRPATH}"
   
     echo ${extractcmd}
-    echo "Log: ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log" 
+    echo "Log: ${MBRPATH}/extractGrib_${STEP}.log" 
     echo
-    ${extractcmd} 2>&1 | tee ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log 
+    ${extractcmd} 2>&1 | tee ${MBRPATH}/extractGrib_${STEP}.log 
     echo
     echo ${extractcmd}
-  fi
 
-done

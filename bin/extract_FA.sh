@@ -41,7 +41,7 @@ echo
 function usage() {
 cat << USAGE
 
-Usage:	$0 [-k] [-n] -d <DTG> -s <step> [-C <centre>] [-e <ensemble_member>:<ensemble_count>] [-t <type>] -f <infile> [-f <infile2 [-f <infile3>...]] [-o <path/to/output/>]
+Usage:	$0 [-k] [-n] -d <DTG> -s <step> [-C <centre>] [-e <ensemble_member>:<ensemble_count>] [-g <griblist> [-g <griblist>]] [-t <type>] -f <infile> [-f <infile2 [-f <infile3>...]] [-o <path/to/output/>]
 
 	Constructs a gl namelist and applies it to <infile> leaving output in <path/to/output/>
 
@@ -103,7 +103,11 @@ fi
 echo "Got file: $INFILE"
 		;;
 		-g)
-			GRIBLIST=$2
+			if [ -z "$GRIBLISTLIST" ]; then
+				GRIBLISTLIST="$2"
+			else
+				GRIBLISTLIST+=" $2"
+			fi
 			shift;shift
 		;;
 		-i)
@@ -186,6 +190,12 @@ function namelist() {
 	${BINDIR}/FA_namelist.sh $@
 }
 
+function outDir() {
+	# Create a per-Centre specific output directory
+	echo $@ | sed -e 's@.*-C \([a-z][a-z][a-z][a-z]\) [^/]*@\1@'
+}
+
+
 if [ ! -d $OUTPATH ]; then
   mkdir -p $OUTPATH
 fi
@@ -230,9 +240,11 @@ if [ $FROMMEMORY == true ]; then
   done
 fi
 
+for GRIBLIST in $GRIBLISTLIST; do
 if [ ! -f $GRIBLIST ]; then
   echo "No griblist found"
 else
+  echo "Processing griblist: ${GRIBLIST}"
   # Sort griblist to place 'MEMORY' entries first
   TMPGRIBLIST=$(basename $GRIBLIST)$$
   egrep -i  '^memory[[:space:]]'       ${GRIBLIST} | sed -e 's/#.*//' >  ${TMPGRIBLIST}
@@ -250,8 +262,13 @@ else
         echo namelist $ARGS $MEMORY
         namelist $ARGS $MEMORY >> ${NAMELIST}
       else
-        echo namelist -d $DTG -s $HHH $ENSEMBLE $ARGS $INCFILE $MEMORY -f ${OUTPATH}/$FILENAME
-        namelist -d $DTG -s $HHH $ENSEMBLE $ARGS $INCFILE $MEMORY -f ${OUTPATH}/$FILENAME >> ${NAMELIST}
+        outDir ${ARGS}
+        OUTDIR=$(outDir ${ARGS})
+	if [ ! -d $OUTPATH/${OUTDIR} ]; then
+	  mkdir -p $OUTPATH/${OUTDIR}
+	fi
+        echo namelist -d $DTG -s $HHH $ENSEMBLE $ARGS $INCFILE $MEMORY -f ${OUTPATH}/${OUTDIR}/$FILENAME
+        namelist -d $DTG -s $HHH $ENSEMBLE $ARGS $INCFILE $MEMORY -f ${OUTPATH}/${OUTDIR}/$FILENAME >> ${NAMELIST}
       fi
     fi
   
@@ -259,6 +276,7 @@ else
   done
   rm $TMPGRIBLIST
 fi
+done
 
 merge_pppkey ${NAMELIST}
 
@@ -271,7 +289,7 @@ if [ $DRYRUN != true ]; then
   cat $NAMELIST
   echo "############ END   of NAMELIST ####################"
   echo
-  $CMD
+  time $CMD
   STATUS=$?
   echo "ran: $CMD"
   echo "Status: $STATUS"

@@ -61,8 +61,11 @@ Usage:	$0 [-a <USERAREA>] [-f <FCST/PATH>] [-m] [-t <type> [-t <type>]] [-h] [-i
 	Extracts requested dataset(s) from Harmonie FA outputs using user-supplied request lists.
 
 	-a <USERAREA> 		Sets the source area for user lists (currently: ${USERAREA})
+	-d <DTG>       		Sets the DateTimeGroup for the forecast (currently: ${DTG})
+	-em <ENSMBR>   		Sets the Ensemble Member for the forecast (currently: ${ENSMBR})
 	-f <FCST/PATH> 		Sets the input path for the forecast (currently: ${FCSTPATH})
 	-m			Sets a member path of the form mbrXXX to be appended to <FCST/PATH>
+	-s <STEP>      		Sets the Step for the forecast (currently: ${STEP})
 	-t <type> 		Sets the input file type(s) for the forecast (currently: ${TYPLIST})
 					 Available types are	fp  - fullpos
 								his - history
@@ -238,6 +241,10 @@ while [ $# -gt 0 ]; do
 			USERAREA=$2
 			shift;shift
 		;;
+		-em)
+			ENSMBR=$2
+			shift;shift
+		;;
 		-f)
 			FCSTPATH=$2
 			shift;shift
@@ -257,6 +264,10 @@ while [ $# -gt 0 ]; do
 		-n)
 			myextractcmd+=" $1"
 			shift
+		;;
+		-s)
+			STEP=$2
+			shift;shift
 		;;
 		-t)
 			if [ $TYPCOUNT -eq 0 ]; then
@@ -345,13 +356,18 @@ for SLIST in $(find ${USERAREA} -name standing.list -o -name user.list); do
 done
     extractcmd+=" -o ${MBRPATH}"
   
-    echo ${extractcmd}
+    echo "++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    echo -n "Starting ${extractcmd} at "
+    date
     if [ ! -d ${MBRPATH} ]; then
-	mkdir -p ${MBRPATH}
+	    mkdir -p ${MBRPATH}
     fi
     echo "Log: ${MBRPATH}/extractGrib_${STEP}.log" 
     echo
-    ${extractcmd} 2>&1 | tee ${MBRPATH}/extractGrib_${STEP}.log 
+    #${extractcmd} 2>&1 | tee ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log 
+    ${extractcmd} > ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log 2>&1
     echo
-    echo ${extractcmd}
+    echo -n "Finished ${extractcmd} at "
+    date
+    echo "++++++++++++++++++++++++++++++++++++++++++++++++++++"
 

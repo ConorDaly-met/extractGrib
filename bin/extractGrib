@@ -60,46 +60,52 @@ Usage:	$0 [-a <USERAREA>] [-f <FCST/PATH>] [-m] [-t <type> [-t <type>]] [-h] [-i
 
 	Extracts requested dataset(s) from Harmonie FA outputs using user-supplied request lists.
 
-	-a <USERAREA> 		Sets the source area for user lists (currently: ${USERAREA})
-	-d <DTG>       		Sets the DateTimeGroup for the forecast (currently: ${DTG})
-	-em <ENSMBR>   		Sets the Ensemble Member for the forecast (currently: ${ENSMBR})
-	-f <FCST/PATH> 		Sets the input path for the forecast (currently: ${FCSTPATH})
-	-m			Sets a member path of the form mbrXXX to be appended to <FCST/PATH>
-	-s <STEP>      		Sets the Step for the forecast (currently: ${STEP})
-	-t <type> 		Sets the input file type(s) for the forecast (currently: ${TYPLIST})
-					 Available types are	fp  - fullpos
-								his - history
-								sfx - SURFEX
+	-a <USERAREA>       Sets the source area for user lists           (currently: ${USERAREA})
+	-d <DTG>            Sets the DateTimeGroup for the forecast       (currently: ${DTG})
+	-dm <DOMAIN>        Sets the Domain name for the forecast         (currently: ${DOMAIN})
+	-em <ENSMBR>        Sets the Ensemble Member for the forecast     (currently: ${ENSMBR})
+	-en <NUMMBR>        Sets the Number of forecasts in the ensemble  (currently: ${NUMMBR})
+	-ex <EXPT>          Sets the Experiment name for the forecast     (currently: ${EXPT})
+	-ez <EZONE>         Sets the boundary zone to remove from his/sfx (currently: ${EZONE})
+	-f <FCST/PATH>      Sets the input path for the forecast          (currently: ${FCSTPATH})
+	-m                  Sets a member path of the form mbrXXX to be appended to <FCST/PATH>
+	-s <STEP>      		Sets the Step for the forecast                (currently: ${STEP})
+	-t <type>           Sets the input file type(s) for the forecast      (currently: ${TYPLIST})
+	                    Available types are    fp  - fullpos
+                                               his - history
+                                               sfx - SURFEX
 
-	-i		Fetch the forecast files directly from the I/O servers
-	-k		Do not delete the namelist
-	-n		Dry-run.  Does not execute the gl run, just makes and displays the namelist
+	-i                  Fetch the forecast files directly from the I/O servers
+	-k                  Do not delete the namelist
+	-n                  Dry-run.  Does not execute the gl run, just makes and displays the namelist
 
-	-h		Show this help
-	-h manual	Displays the README.md file
+	-h                  Show this help
+	-h manual           Displays the README.md file
 
 	Environment Variables:
 
 	extractGrib expects the following environment variables to be set:
+                It will accept them from the commandline also.
 
-		Variable	Current Value	Comment
-		FCSTPATH	${FCSTPATH}
-						Path to the input forecast
-		EXPT		${EXPT}	
-						The experiment name
-		DOMAIN		${DOMAIN}
-						The forecast domain name
-		EZONE		${EZONE}
-						The boundary zone to remove from his/sfx files
+        Variable    Current Value   Comment
+        --------    -------------   -------
+        FCSTPATH    ${FCSTPATH}
+                                    Path to the input forecast
+        EXPT        ${EXPT}	
+                                    The experiment name
+        DOMAIN      ${DOMAIN}
+                                    The forecast domain name
+        EZONE       ${EZONE}
+                                    The boundary zone to remove from his/sfx files
 
-		DTG		${DTG}	
-						The date/time group for the forecast
-		STEP		${STEP}	
-						The forecast step
-		ENSMBR		${ENSMBR}
-						The ensemble member
-		NUMMBR		${NUMMBR}
-						The number of forecasts in the ensemble
+        DTG         ${DTG}	
+                                    The date/time group for the forecast
+        STEP        ${STEP}	
+                                    The forecast step
+        ENSMBR      ${ENSMBR}
+                                    The ensemble member
+        NUMMBR      ${NUMMBR}
+                                    The number of forecasts in the ensemble
 
 USAGE
 fi
@@ -242,8 +248,20 @@ while [ $# -gt 0 ]; do
 			USERAREA=$2
 			shift;shift
 		;;
+		-d)
+			DTG=$2
+			shift;shift
+		;;
+		-dm)
+			DOMAIN=$2
+			shift;shift
+		;;
 		-em)
 			ENSMBR=$2
+			shift;shift
+		;;
+		-ex)
+			EXPT=$2
 			shift;shift
 		;;
 		-f)

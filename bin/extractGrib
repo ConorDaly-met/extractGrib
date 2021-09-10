@@ -260,8 +260,16 @@ while [ $# -gt 0 ]; do
 			ENSMBR=$2
 			shift;shift
 		;;
+		-en)
+			NUMMBR=$2
+			shift;shift
+		;;
 		-ex)
 			EXPT=$2
+			shift;shift
+		;;
+		-ez)
+			export EZONE=$2
 			shift;shift
 		;;
 		-f)

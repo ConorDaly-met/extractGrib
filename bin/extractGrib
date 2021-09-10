@@ -107,9 +107,10 @@ fi
 
 function isOdd() {
 	# returns 1 if odd, 0 otherwise
-	TMP=$(($1 / 2))
+    local TESTVAL=$(echo $1 | sed -e 's/^0*\([1-9]\)/\1/')
+	TMP=$((${TESTVAL} / 2))
 	TMP2=$(($TMP * 2))
-	REM=$(($1 - $TMP2))
+	REM=$((${TESTVAL} - $TMP2))
 	return $REM
 }
 
@@ -175,24 +176,24 @@ function waitFor() {
 	# Wait for up to WTIMEOUT sec for the file to appear
 	# Check size change every 3 sec up to remaining WTIMEOUT x 3
 	# until file stops changing.
-	local WTIMEOUT=60
+	local WTIMEOUT=180
 	local WFILE=$1
 	local WCOUNT=0
 	local WSIZE=1
 	local LSIZE=0
 
-	echo -n "Awaiting $WFILE "
+	echo -n "Awaiting mbr-$ENSMBR $WFILE "
 	while [ ! -f $WFILE ]; do
 		sleep 1
 		echo -n "."
 		WCOUNT=$(($WCOUNT + 1))
 		if [ $WCOUNT -gt $WTIMEOUT ]; then
-			echo " TIMEOUT"
+			echo " TIMEOUT for ${WFILE}"
 			return 1
 		fi
 	done
 	echo
-	echo -n "Checking file size"
+	echo -n "Checking mbr-$ENSMBR file size"
 	while [ $LSIZE -ne $WSIZE ]; do
 		LSIZE=$WSIZE
 		WSIZE=$(stat -t $WFILE | cut -f2 -d' ')
@@ -205,7 +206,7 @@ function waitFor() {
 		echo -n "."
 		WCOUNT=$(($WCOUNT + 1))
 		if [ $WCOUNT -gt $WTIMEOUT ]; then
-			echo " TIMEOUT"
+			echo " TIMEOUT for ${WFILE}"
 			return 1
 		fi
 	done
@@ -214,7 +215,7 @@ function waitFor() {
 
 function outDir() {
 	# Create a per-Centre specific output directory
-	grep -v '#' $1 | grep -- '-C ' | sed -e 's@.*-C \([a-z][a-z][a-z][a-z]\) [^/]*@\1@'
+	grep -v '#' $1 | grep -- '-C ' | sed -e 's@.*-C \([a-z][a-z][a-z][a-z]\) [^/]*@\1@' | uniq
 }
 
 #echo "Binary: $BINARY"
@@ -303,7 +304,7 @@ ENSTYP=$?
 echo "MBR: $MBRPREFIX $MBRPATH"
 if [ ! -z "${MBRPREFIX}" -a "${MBRPATH}" == "." ]; then
 	# Pad ENSMBR with leading zeros to 3 digits
-	MBRPATH="${MBRPREFIX}$(echo 00${ENSMBR} | sed -e 's/.*\([0-9][0-9][0-9]$\)/\1/')"
+	MBRPATH="${MBRPREFIX}$(echo 00${ENSMBR} | sed -e 's/.*\([0-9][0-9][0-9]\)$/\1/')"
 fi
 
 myextractcmd+=" -m"
@@ -354,20 +355,29 @@ for SLIST in $(find ${USERAREA} -name standing.list -o -name user.list); do
     OUTDIR=$(outDir ${SLIST})
   fi
 done
+if [ ${ENSMBR} == "000" ]; then
+  for SLIST in $(find ${USERAREA} -name control.list); do
+    if [ -f ${SLIST} ]; then
+      listtype=$(basename ${SLIST} .list)
+      extractcmd+=" -g ${SLIST}"
+      outDir ${SLIST}
+      OUTDIR=$(outDir ${SLIST})
+    fi
+  done
+fi
     extractcmd+=" -o ${MBRPATH}"
   
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    echo -n "Starting ${extractcmd} at "
-    date
-    if [ ! -d ${MBRPATH} ]; then
-	    mkdir -p ${MBRPATH}
+    echo "$(date) : Starting ${extractcmd}"
+    if [ ! -d ${MBRPATH}/${OUTDIR} ]; then
+	    mkdir -p ${MBRPATH}/${OUTDIR}
     fi
-    echo "Log: ${MBRPATH}/extractGrib_${STEP}.log" 
+    echo "Log: ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log" 
     echo
     #${extractcmd} 2>&1 | tee ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log 
+    #echo "${extractcmd} > ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log"
     ${extractcmd} > ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log 2>&1
     echo
-    echo -n "Finished ${extractcmd} at "
-    date
+    echo "$(date) : Finished ${extractcmd}"
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++"
 

@@ -426,6 +426,10 @@ case "$1" in
 			reprojhelp >&2
 			exit
 		fi
+		if [ ! -f ${REPROJ} ]; then
+			grep pppkey ${REPROJ}
+			exit
+		fi
 	;;
 	-p)
 		PARAMSNAME=$2
@@ -438,6 +442,9 @@ case "$1" in
 		elif [ $# -gt 0 -a "$1" == "help" ]; then
 			paramshelp >&2
 			exit
+		fi
+		if [ ! -f ${PARAMS} ]; then
+			grep pppkey ${PARAMS}
 			exit
 		fi
 	;;

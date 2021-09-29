@@ -75,7 +75,7 @@ OPREFIX=${NAMELISTPATH}/30-${NAMELIST}
 for DD in $DDSET; do
 	for FA in B P I; do
 			O=${OPREFIX}_${FA}${DD}.inc
-			${bindir}/read_paramlist.sh ${DD} -${FA} ${PARAMLIST} > $O
+			${bindir}/read_paramlist ${DD} -${FA} ${PARAMLIST} > $O
 			if [ $? -ne 0 ]; then
 				rm $O
 			fi

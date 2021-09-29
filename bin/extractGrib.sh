@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Name:		extractGrib
+# Name:		extractGrib.sh
 # Author:	Conor Daly <conor.daly@met.ie>
 # Date:		17-jun-2021
 #
@@ -19,8 +19,7 @@ ulimit -s unlimited
 
 # My bindir
 mybindir=$(dirname $0)
-extractor="${mybindir}/extract_FA.sh"
-#extractor="${mybindir}/extract_FA.sh -n"
+extractor="${mybindir}/extract_FA"
 
 # Binary
 BINARY=$BINDIR/gl
@@ -47,7 +46,7 @@ ENSTYP=${ENSTYP-0}
 NUMMBR=${NUMMBR-16}
 
 # User area
-USERAREA=${USERAREA-~/hm_home/extractGrib/etc/griblists}
+USERAREA=${USERAREA-~/hm_home/extractGrib/share/griblists}
 
 function usage() {
 if [ "X$1" == "Xmanual" ]; then

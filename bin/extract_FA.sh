@@ -182,12 +182,12 @@ function merge_pppkey() {
 	if [ $NUMFILES -gt 1 ]; then
 		NF="-mx $NUMFILES"
 	fi
-	${BINDIR}/merge_pppkey.sh $NF $NAMELIST > ${NAMELIST}.tmp
+	${BINDIR}/merge_pppkey $NF $NAMELIST > ${NAMELIST}.tmp
 	mv ${NAMELIST}.tmp ${NAMELIST}
 }
 
 function namelist() {
-	${BINDIR}/FA_namelist.sh $@
+	${BINDIR}/FA_namelist $@
 }
 
 function outDir() {

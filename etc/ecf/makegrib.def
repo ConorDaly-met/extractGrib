@@ -1,0 +1,19 @@
+#5.5.3
+suite makegrib
+  edit USER 'rdarcy'
+  edit EXP 'makegrib'
+  edit ECF_HOME '/home/rdarcy/ecflow_suites'
+  edit ECF_INCLUDE '/data/rdarcy/uwcwtest_repos/extractgrib/etc/ecf'
+  edit ECF_FILES '/data/rdarcy/uwcwtest_repos/extractgrib/etc/ecf'
+  edit TASK ''
+  edit YMD ''
+  edit HH ''
+  edit SUB_H 'sub.h'
+  family run
+    limit par 6
+  endfamily
+  family maint
+    limit par 6
+  endfamily
+endsuite
+# enddef

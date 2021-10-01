@@ -10,38 +10,30 @@ import argparse
 import ecflow as ec
 
 EXP = os.environ['EXP']
-MAX_LL = os.environ['MAX_LL']
-
-MULTITASK = os.environ["MULTITASK"]
 
 CLUSTER = os.environ['HOSTNAME']
 USER = os.environ["USER"]
 
 ECF_HOST = os.environ["ECF_HOST"]
 ECF_PORT = os.environ["ECF_PORT"]
-
-# How long to wait before cleaning
-KEEP_DAYS = os.environ["KEEP_DAYS"]
+ECF_HOME = os.environ["ECF_HOME"]
+EXTRGRIB = os.environ["EXTRGRIB"]
 
 # Force replace suite
 FORCE = os.environ["FORCE"]
 
-START_DTG = os.environ["START_DTG"]
-start_ymd = START_DTG[0:8]
-start_hh = START_DTG[8:10]
 
 
 defs = ec.Defs()
 suite = defs.add_suite(EXP)
 suite.add_variable("USER",           USER)
 suite.add_variable("EXP",            EXP)
-suite.add_variable("ECF_HOME",       "%s"%LBC_WORK)
-suite.add_variable("ECF_INCLUDE",    "%s/share/ecf"%HARMLBCS)
-suite.add_variable("ECF_FILES",      "%s/share/ecf"%HARMLBCS)
+suite.add_variable("ECF_HOME",       "%s"%ECF_HOME)
+suite.add_variable("ECF_INCLUDE",    "%s/etc/ecf"%EXTRGRIB)
+suite.add_variable("ECF_FILES",      "%s/etc/ecf"%EXTRGRIB)
 suite.add_variable("TASK",           "")
 suite.add_variable("YMD",            "")
 suite.add_variable("HH",             "")
-suite.add_variable("MAX_LL",         MAX_LL)
 suite.add_variable("SUB_H",          "sub.h")
 
 # If running at ECMWF, use the schedule script
@@ -98,7 +90,7 @@ else:
 # Save the definition to a .def file
 print("Saving definition to file '%s.def'"%EXP)
 defs.save_as_defs("%s.def"%EXP)
-
+exit(0)
 print("loading on %s@%s" %(ECF_HOST,ECF_PORT))
 
 # Suspend the suite to allow cycles to be forced complete

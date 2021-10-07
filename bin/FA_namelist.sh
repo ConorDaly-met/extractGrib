@@ -305,7 +305,7 @@ function setCenter() {
 			PROCESS=80
 		;;
 		imo)
-			CENTER=999
+			CENTER=0
 			PROCESS=43
 		;;
 		*)
@@ -417,6 +417,8 @@ case "$1" in
 	-r)
 		REPROJNAME=$2
 		REPROJ=${REPROJBASE}${REPROJNAME}.inc
+		# Check also for common projection files
+		REPROJDEF=${INCDIRBASE}/20-${REPROJNAME}.inc
 		shift; shift
 		# Help on cutout/reproj/param
 		if [ "$REPROJNAME" == "help" ]; then
@@ -426,10 +428,20 @@ case "$1" in
 			reprojhelp >&2
 			exit
 		fi
+		if [ ! -f ${REPROJ} ]; then
+			if [ ! -f ${REPROJDEF} ]; then
+				grep pppkey ${REPROJ}
+				exit
+			else
+				REPROJ=${REPROJDEF}
+			fi
+		fi
 	;;
 	-p)
 		PARAMSNAME=$2
 		PARAMS=${PARAMSBASE}${PARAMSNAME}.inc
+		# Check also for common parameter files
+		PARAMSDEF=${INCDIRBASE}/30-${PARAMSNAME}.inc
 		shift; shift
 		# Help on cutout/reproj/param
 		if [ "$PARAMSNAME" == "help" ]; then
@@ -438,7 +450,14 @@ case "$1" in
 		elif [ $# -gt 0 -a "$1" == "help" ]; then
 			paramshelp >&2
 			exit
-			exit
+		fi
+		if [ ! -f ${PARAMS} ]; then
+			if [ ! -f ${PARAMSDEF} ]; then
+				grep pppkey ${PARAMS}
+				exit
+			else
+				PARAMS=${PARAMSDEF}
+			fi
 		fi
 	;;
 	-x)

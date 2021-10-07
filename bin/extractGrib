@@ -75,7 +75,7 @@ ENSTYP=${ENSTYP-0}
 NUMMBR=${NUMMBR-16}
 
 # User area
-USERAREA=${USERAREA-~/hm_home/extractGrib/etc/griblists}
+USERAREA=${USERAREA-~/hm_home/extractGrib/share/griblists}
 
 function usage() {
 if [ "X$1" == "Xmanual" ]; then

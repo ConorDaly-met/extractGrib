@@ -3,13 +3,13 @@
 #module load gl
 
 bindir=$(dirname $0)
-INCDIRBASE=${INCDIRBASE-${bindir}/../etc/namelist_inc}
+INCDIRBASE=${INCDIRBASE-${bindir}/../share/namelist_inc}
 if [ ! -z "${USERAREA}" ]; then
 	INCDIR=$(echo ${USERAREA} | sed -e 's@/griblists.*@/namelist_inc@')
 fi
-INCDIR=${INCDIR-etc/namelist_inc}
+INCDIR=${INCDIR-share/namelist_inc}
 CENTRE=""
-NAMDIR=etc
+NAMDIR=share
 
 function usage() {
 cat << USAGE

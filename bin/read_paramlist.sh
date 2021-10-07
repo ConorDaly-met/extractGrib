@@ -20,7 +20,7 @@
 
 #DEBUG=debug
 bindir=$(dirname $0)
-PARAMSOURCE=${bindir}/../etc/paramlists/param_source.cfg
+PARAMSOURCE=${bindir}/../share/paramlists/param_source.cfg
 
 function usage() {
 cat << USAGE

@@ -5,7 +5,7 @@ cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 
 ################################################################################
 
-project( harmlbcs LANGUAGES NONE )
+project( extractGrib LANGUAGES NONE )
 
 ################################################################################
 

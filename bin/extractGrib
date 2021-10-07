@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Name:		extractGrib.sh
+# Name:		extractGrib
 # Author:	Conor Daly <conor.daly@met.ie>
 # Date:		17-jun-2021
 #
@@ -19,7 +19,7 @@ ulimit -s unlimited
 
 # My bindir
 mybindir=$(dirname $0)
-extractor="${mybindir}/extract_FA"
+extractor="${mybindir}/extract_FA.sh"
 
 # Binary
 BINARY=$BINDIR/gl

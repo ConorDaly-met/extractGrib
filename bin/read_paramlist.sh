@@ -25,10 +25,12 @@ PARAMSOURCE=${bindir}/../etc/paramlists/param_source.cfg
 function usage() {
 cat << USAGE
 
-Usage:	$0 (-d|p|b) (-I|P) <path/to/param.list>
+Usage:	$0 (-d|p|b) (-I|P|B) <path/to/param.list>
 	$0 -h
 
 	Read param.list and write out a gl namelist stanza for the contained parameters.
+	If param.list contains the header: indicatorOfParameter the gl namelist stanza will use readkey%pid
+                                           Otherwise the gl namelist stanza will use readkey%shortname
 
 	-d	Diagnostic    params (readkey%...)
 	-p	Postprocessed params (pppkey%...)
@@ -36,6 +38,7 @@ Usage:	$0 (-d|p|b) (-I|P) <path/to/param.list>
 
 	-I	ICMSHHARM... is the source FA file
 	-P	PFHARM... is the source FA file
+	-B	Both ICMSHHARM... and PFHARM... are the source FA files
 
 	-h	Show this help
 
@@ -78,8 +81,16 @@ function setKey() {
 }
 
 function isParam() {
-  PT="${shortName}:${levType}:${tri}"
-  PTL="${shortName}:${levType}:${tri},${l}"
+  snn=$(echo ${shortName} | tr -d [0-9])
+  if [ "$snn" == "${shortName}" ]; then
+    # Characters
+    PT="${shortName}[0-9-]*:${levType}:${tri}"
+    PTL="${shortName}[0-9-]*:${levType}:${tri},${l}"
+  else
+    # Digits
+    PT="[a-z-]*${shortName}:${levType}:${tri}"
+    PTL="[a-z-]*${shortName}:${levType}:${tri},${l}"
+  fi
 if [ "X$DEBUG" == "Xdebug" ]; then
   echo $DD
   echo -n "seeking $PTL -"
@@ -111,6 +122,13 @@ fi
     P="@$PT[^,]"
     echo $PARAMSET | grep $P > /dev/null
     ST=$?
+  fi
+  # If we are writing readkey%pid, we don't need a match
+  # unless we are writing pppkey%pid
+  if [ "${SNNAME}" == "indicatorOfParameter" ]; then
+    if [ $ST -ne 0 -a "$DD" != "pp" ]; then
+      ST=0
+    fi
   fi
   return $ST
 }
@@ -189,7 +207,14 @@ if [ "X$DEBUG" == "Xdebug" ]; then
   echo "Paramset: $PARAMSET"
 fi
 
-SNKey="%shortname="
+# See are we dealing with GRIB1 "indicatorOfParameter" or GRIB2 "shortName"
+SNNAME=$(grep ":tri:level" ${PARAMLIST} | cut -f1 -d:)
+
+if [ "${SNNAME}" == "shortName" ]; then
+  SNKey="%shortname="
+elif [ "${SNNAME}" == "indicatorOfParameter" ]; then
+  SNKey="%pid="
+fi
 LTKey="%levtype="
 TRKey="%tri="
 LVKey="%level="
@@ -201,7 +226,10 @@ do
   if [ ! -z $LINE ]; then
     #echo $LINE
     getShortName
+    # Do not write out the header.
     if [ "$shortName" == "shortName" ]; then
+      continue
+    elif [ "$shortName" == "indicatorOfParameter" ]; then
       continue
     fi
     getLevType
@@ -224,7 +252,12 @@ do
 if [ "X$DEBUG" == "Xdebug" ]; then
 	echo " yes"
       fi
-        SNKey+="'${shortName}',"
+        if [ "${SNNAME}" == "shortName" ]; then
+          SNKey+="'${shortName}',"
+        elif [ "$SNNAME" == "indicatorOfParameter" ]; then
+	  # $shortName contains pid
+          SNKey+="${shortName},"
+        fi
         LTKey+="'${levType}',"
         TRKey+="${tri},"
         LVKey+="${l},"

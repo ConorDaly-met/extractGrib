@@ -17,11 +17,6 @@
 # Need to set ulimit unlimited
 ulimit -s unlimited
 
-# Set up the extractGrib module
-export COMPILER=${COMPILER-gnu}
-export COMPILER_VERSION=${COMPILER_VERSION-7.3.0}
-module load use.own
-module load extractGrib
 which gl
 
 SCRATCH=${SCRATCH-scratch}
@@ -51,6 +46,7 @@ extractor="${mybindir}/extract_FA.sh"
 
 # Binary
 BINARY=$BINDIR/gl
+echo "Binary: ${BINARY}"
 # Debug level
 PRINTLEV=0
 
@@ -119,6 +115,8 @@ Usage:	$0 [-a <USERAREA>] [-f <FCST/PATH>] [-m] [-t <type> [-t <type>]] [-h] [-i
 
         Variable    Current Value   Comment
         --------    -------------   -------
+        EXP         ${EXP}
+                                    Experiment name for the input forecast.  This defines the path to config-sh/
         FCSTPATH    ${FCSTPATH}
                                     Path to the input forecast
         EXPT        ${EXPT}	

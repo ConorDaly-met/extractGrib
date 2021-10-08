@@ -14,6 +14,14 @@ Met Éireann
 ### Installation
 
 - `git clone` this repo
+-       ```
+        $~> mkdir build
+        $~> cd build
+        $~> cmake .. -CMAKE_INSTALL_PREFIX=/path/to/installation
+        $~> make
+        $~> make install
+        $~> export PATH=/path/to/installation/bin:$PATH
+        ```
 - create your local file structure:
 	```
 	share/griblists/cccc/

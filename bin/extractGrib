@@ -44,7 +44,6 @@ which gl
 # My bindir
 mybindir=$(dirname $0)
 extractor="${mybindir}/extract_FA.sh"
-#extractor="${mybindir}/extract_FA.sh -n"
 
 # Binary
 BINARY=$BINDIR/gl

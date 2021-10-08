@@ -1,0 +1,33 @@
+%include <%SUB_H%>
+%include <head.h>
+
+%manual
+extract_grib.ecf 
+
+REFERENCE:
+    https://uwcwgltest.dmi.dk/iecd/extractGrib
+
+DESCRIPTION:
+    A wrapper for the extracGrib script
+
+1ST LINE:
+    Instructions for "1st line" operators.
+
+2ND LINE:
+    Instructions for "2nd line" on-call team.
+
+%end
+
+for l in $(eval echo "{0..%MAX_LL%}")
+do
+    %EXTRGRIB%/bin/extractGrib %YMD%%HH% ${l} || exit 1
+    # Update the meter
+    ecflow_client --meter=LL $l
+done
+
+%include <tail.h>
+
+%comment
+$Id$
+%end
+

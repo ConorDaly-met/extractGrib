@@ -1,0 +1,39 @@
+#
+# LBC processing system configuration for Met Éireann Linux server (reaserve)
+#
+
+# List of LBC_STREAMS to process
+MODEL_SUITES="ECDS_DINI IREPS"
+
+export MODEL_SUITES
+
+#LBC stream info, used in the incoming LBC file names
+
+# e.g. U1S07210000072103001
+if [ "$LBC_STREAM" == "DINI_HRES_U1S" ]
+then
+    STREAM_SID="U1S"
+    STREAM_EXP="1"
+fi
+
+# Load modules somewhere else
+#
+#. /usr/share/Modules/init/bash > /dev/null 2>&1
+module purge
+module load eccodes/gnu-4.8.5/2.18.0
+module load ecflow/gnu-7.3.1/5.5.3
+
+# ecFlow server
+# port_number is set based on the unique users numeric uid.
+
+username=`id -u`
+
+if [ -z "$ecf_port" ] ; then
+   base=1500
+   port_number=$((base+username))
+else
+   port_number=$ecf_port
+fi
+port_number=5518
+export ECF_PORT=$port_number
+export ECF_HOST=$(hostname)

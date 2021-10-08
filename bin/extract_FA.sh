@@ -13,7 +13,7 @@
 # Version 01
 # Initial version
 #
-BINDIR=$(dirname $0)
+bindir=$(dirname $0)
 OUTPATH=.
 NAMELIST=extract_FA_$$.nam
 KEEPNAM=false
@@ -185,12 +185,12 @@ function merge_pppkey() {
 	if [ $NUMFILES -gt 1 ]; then
 		NF="-mx $NUMFILES"
 	fi
-	${BINDIR}/merge_pppkey.sh $NF $NAMELIST > ${NAMELIST}.tmp
+	${bindir}/merge_pppkey.sh $NF $NAMELIST > ${NAMELIST}.tmp
 	mv ${NAMELIST}.tmp ${NAMELIST}
 }
 
 function namelist() {
-	${BINDIR}/FA_namelist.sh $@
+	${bindir}/FA_namelist.sh $@
 }
 
 function outDir() {

@@ -20,6 +20,7 @@ ulimit -s unlimited
 which gl
 
 SCRATCH=${SCRATCH-scratch}
+PERM=${PERM-${HOME}}
 hostname | grep cca
 if [ $? -eq 0 ]; then
   THISHOST=cca
@@ -74,7 +75,7 @@ ENSTYP=${ENSTYP-0}
 NUMMBR=${NUMMBR-16}
 
 # User area
-USERAREA=${USERAREA-~/hm_home/extractGrib/share/griblists}
+USERAREA=${USERAREA-${PERM}/extractGribConfig/${EXP}/share/griblists}
 
 function usage() {
 if [ "X$1" == "Xmanual" ]; then

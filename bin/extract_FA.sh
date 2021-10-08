@@ -26,15 +26,18 @@ EZONE=${EZONE-11}
 GRIBLIST=griblist
 INFILE=()
 NUMFILES=0
-#echo "GL: $GL"
+echo "GL: $GL"
 GL=${GL-$(which gl)}
-#echo "BN: $BINARY"
+echo "BN: $BINARY"
 BINARY=${BINARY-${GL}}
+echo "BN: $BINARY"
+GL=${BINARY-${GL}}
+
 
 echo "Command received:"
 echo $(basename $0) $*
 echo
-#echo "GL: $GL"
+echo "GL: $GL"
 #echo "BN: $BINARY"
 
 
@@ -192,7 +195,7 @@ function namelist() {
 
 function outDir() {
 	# Create a per-Centre specific output directory
-	echo $@ | sed -e 's@.*-C \([a-z][a-z][a-z][a-z]\) [^/]*@\1@'
+	echo $@ | sed -e 's@.*-C \([a-z]*\) [^/]*@\1@'
 }
 
 
@@ -200,12 +203,12 @@ if [ ! -d $OUTPATH ]; then
   mkdir -p $OUTPATH
 fi
 
-if [ ! -f ${INFILE} ]; then
-  echo
-  echo "Error, $INFILE does not exist"
-  echo
+#if [ ! -f ${INFILE} ]; then
+#  echo
+#  echo "Error, $INFILE does not exist"
+#  echo
 #  exit
-fi
+#fi
 
 
 fileroot
@@ -235,8 +238,10 @@ if [ $FROMMEMORY == true ]; then
     if [ $? -eq 0 ]; then
       MYEZONE=""
     fi
-    echo namelist -s $HHH -mx $NUMFILES ${MYEZONE} -m $N $MEMORY
-    namelist -s $HHH -mx $NUMFILES ${MYEZONE} -m $N $MEMORY >> ${NAMELIST}
+    if [ -f $N ]; then
+      echo namelist -s $HHH -mx $NUMFILES ${MYEZONE} -m $N $MEMORY
+      namelist -s $HHH -mx $NUMFILES ${MYEZONE} -m $N $MEMORY >> ${NAMELIST}
+    fi
   done
 fi
 
@@ -281,7 +286,7 @@ done
 merge_pppkey ${NAMELIST}
 
 #CMD="$GL -p -n ${NAMELIST} $INFILE"
-CMD="$GL -igd -p -n ${NAMELIST}"
+CMD="$GL -timing -igd -p -n ${NAMELIST}"
 if [ $DRYRUN != true ]; then
   echo
   echo "Namelist used: $NAMELIST"
@@ -289,16 +294,16 @@ if [ $DRYRUN != true ]; then
   cat $NAMELIST
   echo "############ END   of NAMELIST ####################"
   echo
-  time $CMD
+  time $MPPGL $CMD
   STATUS=$?
-  echo "ran: $CMD"
+  echo "ran: $MPPGL $CMD"
   echo "Status: $STATUS"
   if [ $STATUS -ne 0 ]; then
     KEEPNAM=true
   fi
 else
   echo
-  echo "Dry run, displaying namelist"
+  echo "Dry run, displaying namelist ${NAMELIST}"
 #  echo "To do the extract, run: "
 #  echo
 #  echo "	$CMD"

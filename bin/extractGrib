@@ -17,6 +17,30 @@
 # Need to set ulimit unlimited
 ulimit -s unlimited
 
+which gl
+
+SCRATCH=${SCRATCH-scratch}
+hostname | grep cca
+if [ $? -eq 0 ]; then
+  THISHOST=cca
+  CFGSH=ecgb-cca
+  EXP=${EXP-cca_dini25a_l90_arome}
+  COMPTYPE=${COMPTYPE-gnu}
+fi
+hostname | grep bullx
+if [ $? -eq 0 ]; then
+  THISHOST=bullx
+  CFGSH=KNMI.bullx_b720
+  EXP=${EXP-IREPS}
+  COMPTYPE=${COMPTYPE-gnu}
+fi
+
+ if [ -f $SCRATCH/hm_home/$EXP/lib/config-sh/config.${CFGSH} ${COMPTYPE} ]; then
+   source $SCRATCH/hm_home/$EXP/lib/config-sh/config.${CFGSH} ${COMPTYPE}
+ fi
+
+which gl
+
 # My bindir
 mybindir=$(dirname $0)
 extractor="${mybindir}/extract_FA.sh"
@@ -24,10 +48,14 @@ extractor="${mybindir}/extract_FA.sh"
 
 # Binary
 BINARY=$BINDIR/gl
+echo "Binary: ${BINARY}"
 # Debug level
 PRINTLEV=0
 
 # Input forecast
+WORKPATH=${WORKPATH-.}
+echo cd ${WORKPATH}
+cd ${WORKPATH}
 FCSTPATH=${FCSTPATH-.}
 GETIOSERV=${GETIOSERV-no}
 MBRPREFIX=${MBRPREFIX-}
@@ -47,7 +75,7 @@ ENSTYP=${ENSTYP-0}
 NUMMBR=${NUMMBR-16}
 
 # User area
-USERAREA=${USERAREA-~/hm_home/extractGrib/etc/griblists}
+USERAREA=${USERAREA-~/hm_home/extractGrib/share/griblists}
 
 function usage() {
 if [ "X$1" == "Xmanual" ]; then
@@ -89,6 +117,8 @@ Usage:	$0 [-a <USERAREA>] [-f <FCST/PATH>] [-m] [-t <type> [-t <type>]] [-h] [-i
 
         Variable    Current Value   Comment
         --------    -------------   -------
+        EXP         ${EXP}
+                                    Experiment name for the input forecast.  This defines the path to config-sh/
         FCSTPATH    ${FCSTPATH}
                                     Path to the input forecast
         EXPT        ${EXPT}	
@@ -221,7 +251,7 @@ function waitFor() {
 
 function outDir() {
 	# Create a per-Centre specific output directory
-	grep -v '#' $1 | grep -- '-C ' | sed -e 's@.*-C \([a-z][a-z][a-z][a-z]\) [^/]*@\1@' | uniq
+	grep -v '#' $1 | grep -- '-C ' | sed -e 's@.*-C \([a-z]*\) [^/]*@\1@' | uniq
 }
 
 #echo "Binary: $BINARY"
@@ -392,17 +422,18 @@ if [ ${ENSMBR} == "000" ]; then
   done
 fi
     extractcmd+=" -o ${MBRPATH}"
+    LOGDIR=${MBRPATH}/log
+    LOG=${LOGDIR}/extractGrib_${listtype}_${STEP}.log 
+    if [ ! -d ${LOGDIR} ]; then
+	    mkdir -p ${LOGDIR}
+    fi
   
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++"
     echo "$(date) : Starting ${extractcmd}"
-    if [ ! -d ${MBRPATH}/${OUTDIR} ]; then
-	    mkdir -p ${MBRPATH}/${OUTDIR}
-    fi
-    echo "Log: ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log" 
+    echo "Log: ${LOG}"
+    pwd
     echo
-    #${extractcmd} 2>&1 | tee ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log 
-    #echo "${extractcmd} > ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log"
-    ${extractcmd} > ${MBRPATH}/${OUTDIR}/extractGrib_${listtype}_${STEP}.log 2>&1
+    ${extractcmd} > ${LOG} 2>&1
     echo
     echo "$(date) : Finished ${extractcmd}"
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++"

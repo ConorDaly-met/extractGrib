@@ -3,13 +3,13 @@
 #module load gl
 
 bindir=$(dirname $0)
-INCDIRBASE=${INCDIRBASE-${bindir}/../etc/namelist_inc}
+INCDIRBASE=${INCDIRBASE-${bindir}/../share/namelist_inc}
 if [ ! -z "${USERAREA}" ]; then
 	INCDIR=$(echo ${USERAREA} | sed -e 's@/griblists.*@/namelist_inc@')
 fi
-INCDIR=${INCDIR-etc/namelist_inc}
+INCDIR=${INCDIR-share/namelist_inc}
 CENTRE=""
-NAMDIR=etc
+NAMDIR=share
 
 function usage() {
 cat << USAGE
@@ -305,7 +305,7 @@ function setCenter() {
 			PROCESS=80
 		;;
 		imo)
-			CENTER=999
+			CENTER=0
 			PROCESS=43
 		;;
 		*)
@@ -417,6 +417,8 @@ case "$1" in
 	-r)
 		REPROJNAME=$2
 		REPROJ=${REPROJBASE}${REPROJNAME}.inc
+		# Check also for common projection files
+		REPROJDEF=${INCDIRBASE}/20-${REPROJNAME}.inc
 		shift; shift
 		# Help on cutout/reproj/param
 		if [ "$REPROJNAME" == "help" ]; then
@@ -426,10 +428,20 @@ case "$1" in
 			reprojhelp >&2
 			exit
 		fi
+		if [ ! -f ${REPROJ} ]; then
+			if [ ! -f ${REPROJDEF} ]; then
+				grep pppkey ${REPROJ}
+				exit
+			else
+				REPROJ=${REPROJDEF}
+			fi
+		fi
 	;;
 	-p)
 		PARAMSNAME=$2
 		PARAMS=${PARAMSBASE}${PARAMSNAME}.inc
+		# Check also for common parameter files
+		PARAMSDEF=${INCDIRBASE}/30-${PARAMSNAME}.inc
 		shift; shift
 		# Help on cutout/reproj/param
 		if [ "$PARAMSNAME" == "help" ]; then
@@ -438,7 +450,14 @@ case "$1" in
 		elif [ $# -gt 0 -a "$1" == "help" ]; then
 			paramshelp >&2
 			exit
-			exit
+		fi
+		if [ ! -f ${PARAMS} ]; then
+			if [ ! -f ${PARAMSDEF} ]; then
+				grep pppkey ${PARAMS}
+				exit
+			else
+				PARAMS=${PARAMSDEF}
+			fi
 		fi
 	;;
 	-x)

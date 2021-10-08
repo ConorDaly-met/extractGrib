@@ -37,6 +37,7 @@ do
     then
         export "${model_suite}_mbrdet_ENSMSEL="$ENSMSEL""
         export "${model_suite}_mbrdet_LL_LIST="$LL_LIST""
+        export "${model_suite}_mbrdet_ARCHIVE_ROOT="$ARCHIVE_ROOT""
     else
         # Get the list of ensemble members
         module unload python
@@ -48,6 +49,7 @@ do
         do
             source ${HM_LIB}/ecf/config_mbr${ENSMBR}.h || exit 1
             export "${model_suite}_mbr${ENSMBR}_LL_LIST="$LL_LIST""
+            export "${model_suite}_mbr${ENSMBR}_ARCHIVE_ROOT="$ARCHIVE_ROOT""
         done
 
     fi

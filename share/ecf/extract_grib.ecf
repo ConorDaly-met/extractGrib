@@ -18,12 +18,25 @@ DESCRIPTION:
 
 %end
 
-for l in $(eval echo "{0..%MAX_LL%}")
-do
-    %EXTRGRIB%/bin/extractGrib %YMD%%HH% ${l} || exit 1
-    # Update the meter
-    ecflow_client --meter=LL $l
-done
+
+export FCSTPATH=$ARCHIVE_ROOT/$YY/$MM/$DD/$HH/mbr$ENSMBR
+
+export DOMAIN=%DOMAIN%
+export EXP=%EXP%
+
+export ENSMBR=%ENSMBR%
+if [ "$ENSMBR" == "det" ]
+    extgrib_flags=""
+    export ENSMBR="000"
+else
+    extgrib_flags="-m"
+fi
+
+export DTG=%YMD%%HH%
+export STEP=%STEP%
+export WORK_PATH=$ARCHIVE_ROOT/archive/extractGribFiles
+
+%EXTRGRIB%/bin/extractGrib ${extgrib_flags} || exit 1
 
 %include <tail.h>
 

@@ -83,7 +83,6 @@ def create_family_run():
     run.add_limit("par", 6)
     run.add_repeat(ec.RepeatDate("YMD",int(start_ymd), 20990101, 1))
 
-
     # For this experiment, recover the list of cycles HH_LIST
     HH_LIST = os.environ["HH_LIST"]
     # Split this (e.g. 00-18:6) into the range (e.g. 00-18) and the steps (e.g. 6)
@@ -124,18 +123,28 @@ def create_family_run():
             ll_list = q * LL_LIST + LL_LIST[:r]
             # Get the ll for this member/cycle using the cycle_i iterator
             max_ll = ll_list[cycle_i]
+    
+            archive_root = os.environ[model_suite + "_mbr" + mbr + "_ARCHIVE_ROOT"]
 
             fm = fc.add_family("mbr"+mbr)
             # Update variables required for extractGrib
-            fm.add_variable("FCSTPATH",     null)
-            fm.add_variable("EXPT",         null)
+            fm.add_variable("FCSTPATH",     archive_root) # This is $ARCHIVE
+            fm.add_variable("EXP",          model_suite)
             fm.add_variable("DOMAIN",       DOMAIN)
             fm.add_variable("EZONE",        null)
             fm.add_variable("DTG",          null)
             fm.add_variable("STEP",         null)
             fm.add_variable("ENSMBR",       mbr)
             fm.add_variable("MAX_LL",       max_ll)
-            fm.add_task("extract_grib")
+            fm.add_variable("ARCHIVE_ROOT", archive_root)
+            
+
+            for ll in range(0, int(max_ll) + 1):
+                fl = fm.add_family(str(ll))
+                lll = str(ll).zfill(3)
+                fl.add_variable("STEP",    lll)
+                te = fl.add_task("extract_grib")
+
 
         # Iterate cycle_i so we know which ll to pick from ll_list
         cycle_i = cycle_i + 1
@@ -156,7 +165,7 @@ for model_suite in model_suites:
     ENSMSEL = os.environ[model_suite + '_ENSMSEL']
     DOMAIN = os.environ[model_suite + '_DOMAIN']
 
-    fm.add_variable("EXPT",     model_suite)
+    fm.add_variable("EXP",     model_suite)
     fm.add_family(create_family_run())
     fm.add_family(create_family_maint())
 
@@ -179,14 +188,14 @@ else:
 # Save the definition to a .def file
 print("Saving definition to file '%s.def'"%SUITE_NAME)
 defs.save_as_defs("%s.def"%SUITE_NAME)
-exit(0)
+#exit(0)
 print("loading on %s@%s" %(ECF_HOST,ECF_PORT))
 
 # Suspend the suite to allow cycles to be forced complete
 client.suspend("/%s" %suite.name())
 # Begin the suite
 client.begin_suite("/%s" % suite.name(), True)
-
+exit(0)
 # Mark all HH before start_hh complete
 if int(start_hh) > 0:
     for h in range (0,int(start_hh),6):

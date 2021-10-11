@@ -31,6 +31,15 @@ Met Éireann
 - [Populate](#setup) with parameter lists, sub-domains/projections, griblists
 - Create environment variable USERAREA pointing to your `share/griblists` (Default is `~/hm_home/extractGrib/share/griblists`)
 
+### ecFlow suite generation
+
+An ecFlow suite can be generated given a list of model experiments defined in the config file.
+
+- bin/create_suite.sh
+
+A suite definition file will be created using the configuration of each model experiment. The script expects to find such model configuration files at ~/hm_home/${model_exp}/Env_system where ${model_exp} is the name of the model experiment.
+
+
 ### Workflow
 
 #### Setup

@@ -12,7 +12,7 @@
 #module load ecflow/gnu-7.3.1/5.5.3
 #source ../share/config/config.ecgb-cca
 #set -x
-export SUITE_NAME="makegrib"
+export SUITE_NAME="extractGrib"
 
 #export ECF_HOST="reaserve"
 #export ECF_PORT="5518"

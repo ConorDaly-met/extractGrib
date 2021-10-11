@@ -212,7 +212,7 @@ function waitFor() {
 	# Wait for up to WTIMEOUT sec for the file to appear
 	# Check size change every 3 sec up to remaining WTIMEOUT x 3
 	# until file stops changing.
-	local WTIMEOUT=180
+	local WTIMEOUT=${WAITIMEOUT-180}
 	local WFILE=$1
 	local WCOUNT=0
 	local WSIZE=1

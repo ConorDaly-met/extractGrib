@@ -13,30 +13,70 @@ DESCRIPTION:
 1ST LINE:
     Instructions for "1st line" operators.
 
+    extractGrib log is to be found in 
+        $ARCHIVE_ROOT/archive/extractGribFiles/$MBRPATH/log/extractGrib_control_$STEP.log
+    or 
+        $ARCHIVE_ROOT/archive/extractGribFiles/$MBRPATH/log/extractGrib_standing_$STEP.log
+
+    Run the command: 
+
+        egrep 'INFILE|OUTFILE|pppkey%shortname|Read namelist number|Created new grib file|Loop' <LOGFILE>
+
+    to produce a list of expected (OUTFILE) vs written (Created new grib file) output files.  
+
+    A problem will result in an early halt of the output.  Identify the offending OUTFILE:
+      This will be the last line of output or else will not have been output and the last line 
+      of output will be "Read namelist number   nn".  This may be used to identify the OUTFILE.
+
+    "griblist" files are to be found in $PERM/metapp/extractGribConfig/share/griblists/ .  
+    The suffix of OUTFILE will contain 'CONTROL' for control.list, 'USER' for user.list .  Otherwise
+    use standing.list.  The remainder of the suffix will identify the offending line in the griblist file.
+    Comment this out and re-submit.
+
+    A successful run will contain a set of 'Loop_nn' entries at the end of the <LOGFILE>.
+    
+
 2ND LINE:
     Instructions for "2nd line" on-call team.
 
 %end
 
+# load the extractGrib module
+module load use.own
+module load extractGrib
 
-export FCSTPATH=$ARCHIVE_ROOT/$YY/$MM/$DD/$HH/mbr$ENSMBR
-
+# extractGrib expects DOMAIN, EXP, ENSMBR, STEP, FCSTPATH and WORK_PATH
 export DOMAIN=%DOMAIN%
 export EXP=%EXP%
 
+# Ensemble member
 export ENSMBR=%ENSMBR%
+extgrib_flags="-m"
+MBRPATH=mbr$ENSMBR
+
+# Adjust ENSMBR and MBRPATH if running in deterministic mode
 if [ "$ENSMBR" == "det" ]
     extgrib_flags=""
+    MBRPATH=.
     export ENSMBR="000"
-else
-    extgrib_flags="-m"
 fi
 
+export FCSTPATH=$ARCHIVE_ROOT/$YY/$MM/$DD/$HH/$MBRPATH
+
 export DTG=%YMD%%HH%
-export STEP=%STEP%
 export WORK_PATH=$ARCHIVE_ROOT/archive/extractGribFiles
 
-%EXTRGRIB%/bin/extractGrib ${extgrib_flags} || exit 1
+# loop over steps for this listener
+# This loop iterates over step n, n+$EXTRGRIB_LISTENERS, n+(2 x $EXTRGRIB_LISTENERS),  n+(3 x $EXTRGRIB_LISTENERS), etc
+for STEP in $(seq $((-1 + $listener)) $EXTRGRIB_LISTENERS $(($max_ll -1)) ); do
+
+  # Extend the waitfor() timeout (seconds) for extractGrib
+  export WAITIMEOUT=$((180 * $STEP))
+  export STEP
+
+  extractGrib ${extgrib_flags} || exit 1
+
+done
 
 %include <tail.h>
 

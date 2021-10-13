@@ -140,10 +140,11 @@ def create_family_run():
             fm.add_variable("ARCHIVE_ROOT", archive_root)
             
 
-            for lstnr in range(1, int(EXTRGRIB_LISTENERS)):
-                fl = fm.add_family('listen-' + str(lstnr))
-                fl.add_variable("listener",    lstnr)
-                te = fl.add_task("extract_grib")
+            for lstnr in range(0, int(EXTRGRIB_LISTENERS)):
+                if (int(lstnr) <= int(max_ll)):
+                    fl = fm.add_family('listen' + str(lstnr))
+                    fl.add_variable("listener",    lstnr)
+                    te = fl.add_task("extract_grib")
 
 
         # Iterate cycle_i so we know which ll to pick from ll_list
@@ -165,6 +166,8 @@ for model_suite in model_suites:
     ENSMSEL = os.environ[model_suite + '_ENSMSEL']
     DOMAIN = os.environ[model_suite + '_DOMAIN']
     EXTRGRIB_LISTENERS = os.environ["EXTRGRIB_LISTENERS"]
+    # Add externs
+    
 
     fm.add_variable("EXP",     model_suite)
     fm.add_family(create_family_run())

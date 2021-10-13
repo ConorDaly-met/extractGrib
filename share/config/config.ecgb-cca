@@ -5,7 +5,10 @@
 # List of LBC_STREAMS to process
 MODEL_SUITES="p1met43startfile IREPS_preop"
 
-export MODEL_SUITES
+# Number of parallel tasks per member
+EXTRGRIB_LISTENERS=6
+
+export MODEL_SUITES EXTRGRIB_LISTENERS
 
 # Load modules
 module unload ecflow

@@ -418,7 +418,7 @@ case "$1" in
 		REPROJNAME=$2
 		REPROJ=${REPROJBASE}${REPROJNAME}.inc
 		# Check also for common projection files
-		REPROJDEF=${INCDIRBASE}/20-${REPROJNAME}.inc
+		REPROJDEF=${INCDIR}/20-${REPROJNAME}.inc
 		shift; shift
 		# Help on cutout/reproj/param
 		if [ "$REPROJNAME" == "help" ]; then
@@ -441,7 +441,7 @@ case "$1" in
 		PARAMSNAME=$2
 		PARAMS=${PARAMSBASE}${PARAMSNAME}.inc
 		# Check also for common parameter files
-		PARAMSDEF=${INCDIRBASE}/30-${PARAMSNAME}.inc
+		PARAMSDEF=${INCDIR}/30-${PARAMSNAME}.inc
 		shift; shift
 		# Help on cutout/reproj/param
 		if [ "$PARAMSNAME" == "help" ]; then

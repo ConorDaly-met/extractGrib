@@ -68,10 +68,11 @@ export WORK_PATH=$ARCHIVE_ROOT/archive/extractGribFiles
 
 # loop over steps for this listener
 # This loop iterates over step n, n+$EXTRGRIB_LISTENERS, n+(2 x $EXTRGRIB_LISTENERS),  n+(3 x $EXTRGRIB_LISTENERS), etc
-for STEP in $(seq $((-1 + $listener)) $EXTRGRIB_LISTENERS $(($max_ll -1)) ); do
+for STEP in $(seq %listener% $EXTRGRIB_LISTENERS $max_ll ); do
 
   # Extend the waitfor() timeout (seconds) for extractGrib
-  export WAITIMEOUT=$((180 * $STEP))
+  WAITIMEOUT=$((180 * $STEP))
+  export WAITIMEOUT=$(($WAITIMEOUT + 180))
   export STEP
 
   extractGrib ${extgrib_flags} || exit 1

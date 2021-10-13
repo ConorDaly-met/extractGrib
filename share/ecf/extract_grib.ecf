@@ -40,9 +40,11 @@ DESCRIPTION:
     Instructions for "2nd line" on-call team.
 
 %end
-
+set -x
 # load the extractGrib module
-module load use.own
+module use /home/ms/ie/duuw/privatemodules/
+echo $MODULEPATH
+#module load use.own
 module load extractGrib
 
 # extractGrib expects DOMAIN, EXP, ENSMBR, STEP, FCSTPATH and WORK_PATH
@@ -56,6 +58,7 @@ MBRPATH=mbr$ENSMBR
 
 # Adjust ENSMBR and MBRPATH if running in deterministic mode
 if [ "$ENSMBR" == "det" ]
+then
     extgrib_flags=""
     MBRPATH=.
     export ENSMBR="000"

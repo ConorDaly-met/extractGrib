@@ -3,7 +3,7 @@
 #
 
 # List of LBC_STREAMS to process
-MODEL_SUITES="IREPS_preop cca_dini25a_l90_arome"
+MODEL_SUITES="cca_dini25a_l90_arome"
 
 # Number of parallel tasks per member
 EXTRGRIB_WORKERS=6

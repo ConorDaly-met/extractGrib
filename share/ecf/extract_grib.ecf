@@ -14,9 +14,9 @@ DESCRIPTION:
     Instructions for "1st line" operators.
 
     extractGrib log is to be found in 
-        $ARCHIVE_ROOT/archive/extractGribFiles/$MBRPATH/log/extractGrib_control_$STEP.log
+        %ARCHIVE_ROOT%/archive/extractGribFiles/$MBRPATH/log/extractGrib_control_$STEP.log
     or 
-        $ARCHIVE_ROOT/archive/extractGribFiles/$MBRPATH/log/extractGrib_standing_$STEP.log
+        %ARCHIVE_ROOT%/archive/extractGribFiles/$MBRPATH/log/extractGrib_standing_$STEP.log
 
     Run the command: 
 
@@ -47,7 +47,7 @@ echo $MODULEPATH
 #module load use.own
 module load extractGrib
 
-# extractGrib expects DOMAIN, EXP, ENSMBR, STEP, FCSTPATH and WORK_PATH
+# extractGrib expects DOMAIN, EXP, ENSMBR, STEP, FCSTPATH and WORKPATH
 export DOMAIN=%DOMAIN%
 export EXP=%EXP%
 
@@ -64,10 +64,10 @@ then
     export ENSMBR="000"
 fi
 
-export FCSTPATH=$ARCHIVE_ROOT/$YY/$MM/$DD/$HH/$MBRPATH
+export FCSTPATH=%ARCHIVE_ROOT%/$YY/$MM/$DD/$HH/$MBRPATH
 
 export DTG=%YMD%%HH%
-export WORK_PATH=$ARCHIVE_ROOT/archive/extractGribFiles
+export WORKPATH=%ARCHIVE_ROOT%/archive/extractGribFiles
 
 # loop over steps for this worker
 # This loop iterates over step n, n+$EXTRGRIB_WORKERS, n+(2 x $EXTRGRIB_WORKERS),  n+(3 x $EXTRGRIB_WORKERS), etc

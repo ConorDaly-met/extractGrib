@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#set -x
 # This script will create the ecFlow suite definition and load it into the
 # ecfFlow server. It can take a 'host' argument for a specific environment
 
@@ -105,7 +105,7 @@ export EXTRGRIB_CONFIG=${config:-$default_config}
 export EXP=${EXP:-$default_exp}
 
 # The default install_location
-default_install_location="$HOME/ecflow_suites"
+default_install_location="$HOME/extrgrib_work"
 
 # Set the install location
 export install_location=${install_location:-$default_install_location}
@@ -119,12 +119,12 @@ fi
 export START_DTG
 
 # The install location must exist and be writable
-if ! [ -w $install_location ]
-then
-    echo "ERROR: The install location does not exist or you do not have write permission"
-    echo "  ${install_location} does not exist/not writable by user ${USER}"
-    exit 1
-fi
+#if ! [ -w $install_location ]
+#then
+#    echo "ERROR: The install location does not exist or you do not have write permission"
+#    echo "  ${install_location} does not exist/not writable by user ${USER}"
+#    exit 1
+#fi
 
 # Make sure such a config exists
 if ! [ -s ${repo_dir}/share/config/config.${EXTRGRIB_CONFIG} ] 

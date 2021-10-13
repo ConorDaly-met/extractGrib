@@ -156,10 +156,6 @@ def create_family_run():
                     te.add_part_trigger("( /" + model_suite + "/Date:YMD == ../../../../run:YMD and /" + model_suite + "/Date/Hour:HH > " + cycle + " )", False)
                     # Trigger when model forecast DTG = extractGrib DTG, and model forecast is complete
                     te.add_part_trigger("( /" + model_suite + "/Date:YMD == ../../../../run:YMD and /" + model_suite + "/Date/Hour:HH == " + cycle + " and ( /" + model_suite + "/Date/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast == complete or ( /" + model_suite + "/Date/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast == active and /" + model_suite + "/Date/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast:hh >= " + str(lstnr) + " ) ) )", False)
-#                    if ensmbr == "det":
-#                        te.add_trigger("/" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast == complete or ( /" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast == active and /" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast:hh >=" + str(lstnr) + ")")
-#                    else:
-#                        te.add_trigger("/" + model_suite + "/Date/Hour/Cycle/Mbr" + ensmbr + "/Forecasting/Forecast == complete or ( /" + model_suite + "/Date/Hour/Cycle/Mbr" + ensmbr + "/Forecasting/Forecast == active and /" + model_suite + "/Date/Hour/Cycle/Mbr" + ensmbr + "/Forecasting/Forecast:hh >=" + str(lstnr) + ")")
 
 
         # Iterate cycle_i so we know which ll to pick from ll_list

@@ -28,7 +28,7 @@ DESCRIPTION:
       This will be the last line of output or else will not have been output and the last line 
       of output will be "Read namelist number   nn".  This may be used to identify the OUTFILE.
 
-    "griblist" files are to be found in $PERM/metapp/extractGribConfig/share/griblists/ .  
+    "griblist" files are to be found in $HOME/extractGribConfig/$EXP/share/griblists/ .  
     The suffix of OUTFILE will contain 'CONTROL' for control.list, 'USER' for user.list .  Otherwise
     use standing.list.  The remainder of the suffix will identify the offending line in the griblist file.
     Comment this out and re-submit.

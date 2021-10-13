@@ -67,7 +67,7 @@ fi
 export FCSTPATH=%ARCHIVE_ROOT%/$YY/$MM/$DD/$HH/$MBRPATH
 
 export DTG=%YMD%%HH%
-export WORKPATH=%ARCHIVE_ROOT%/archive/extractGribFiles
+export WORKPATH=%ARCHIVE_ROOT%/extractGribFiles
 
 # loop over steps for this worker
 # This loop iterates over step n, n+$EXTRGRIB_WORKERS, n+(2 x $EXTRGRIB_WORKERS),  n+(3 x $EXTRGRIB_WORKERS), etc

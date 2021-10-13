@@ -3,12 +3,12 @@
 #
 
 # List of LBC_STREAMS to process
-MODEL_SUITES="p1met43startfile IREPS_preop"
+MODEL_SUITES="IREPS_preop cca_dini25a_l90_arome"
 
 # Number of parallel tasks per member
-EXTRGRIB_LISTENERS=6
+EXTRGRIB_WORKERS=6
 
-export MODEL_SUITES EXTRGRIB_LISTENERS
+export MODEL_SUITES EXTRGRIB_WORKERS
 
 # Load modules
 module unload ecflow

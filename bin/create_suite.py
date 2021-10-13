@@ -67,8 +67,18 @@ if "ecgb" in CLUSTER:
     suite.add_variable("SUB_H",             "qsub.h")
 
 
-
-
+def ENSMSEL_to_list(ENSMSEL):
+    if ENSMSEL == "":
+        print("Deterministic forecast only")
+        ensmbrs = [ 'det' ]
+    else:
+        # Convert this string into a list item containing all ensemble members
+        ensmsel = sum(((list(range(*[int(b) + c
+            for c, b in enumerate(a.split('-'))]))
+            if '-' in a else [int(a)]) for a in ENSMSEL.split(',')), [])
+        # Pad this list to 3 digits
+        ensmbrs = [str(mbr).zfill(3) for mbr in ensmsel]
+    return ensmbrs
 
 # The run family should contain the operational functionality of the suite
 # If a task in run aborts, operators will be instructed to intervene
@@ -82,7 +92,7 @@ def create_family_run():
     run = ec.Family("run")
     run.add_limit("par", 6)
     run.add_repeat(ec.RepeatDate("YMD",int(start_ymd), 20990101, 1))
-
+    run.add_trigger("/" + model_suite + "/Date:YMD >= :YMD")
     # For this experiment, recover the list of cycles HH_LIST
     HH_LIST = os.environ["HH_LIST"]
     # Split this (e.g. 00-18:6) into the range (e.g. 00-18) and the steps (e.g. 6)
@@ -98,18 +108,10 @@ def create_family_run():
     for cycle in cycle_list:
         fc = run.add_family(cycle).add_inlimit("par")
         fc.add_variable("HH", cycle)
+        fc.add_trigger("/" + model_suite + "/Date/Hour:HH >=" + cycle)
         null="null"
         # For this experiment, recover the list of ensemble members ENSMSEL
-        if ENSMSEL == "":
-            print("Deterministic forecast only")
-            ensmbrs = [ 'det' ]
-        else:
-            # Convert this string into a list item containing all ensemble members
-            ensmsel = sum(((list(range(*[int(b) + c
-                for c, b in enumerate(a.split('-'))]))
-                if '-' in a else [int(a)]) for a in ENSMSEL.split(',')), [])
-            # Pad this list to 3 digits
-            ensmbrs = [str(mbr).zfill(3) for mbr in ensmsel]
+        ensmbrs = ENSMSEL_to_list(ENSMSEL)
 
         # Iterate over each ensemble member
         for mbr in ensmbrs:
@@ -138,13 +140,26 @@ def create_family_run():
             fm.add_variable("MAX_LL",       max_ll)
             fm.add_variable("EXTRGRIB_LISTENERS",       EXTRGRIB_LISTENERS)
             fm.add_variable("ARCHIVE_ROOT", archive_root)
-            
 
             for lstnr in range(0, int(EXTRGRIB_LISTENERS)):
                 if (int(lstnr) <= int(max_ll)):
                     fl = fm.add_family('listen' + str(lstnr))
                     fl.add_variable("listener",    lstnr)
+                    if ensmbr == "det":
+                        trigger_mbr = ""
+                    else:
+                        trigger_mbr = "Mbr" + mbr + "/"
                     te = fl.add_task("extract_grib")
+                    # Trigger when model forecast YMD > extractGrib YMD
+                    te.add_trigger("/" + model_suite + "/Date:YMD > ../../../../run:YMD")
+                    # Trigger when model forecast YMD = extractGrib YMD, but model forecast HH > extractGrib HH
+                    te.add_part_trigger("( /" + model_suite + "/Date:YMD == ../../../../run:YMD and /" + model_suite + "/Date/Hour:HH > " + cycle + " )", False)
+                    # Trigger when model forecast DTG = extractGrib DTG, and model forecast is complete
+                    te.add_part_trigger("( /" + model_suite + "/Date:YMD == ../../../../run:YMD and /" + model_suite + "/Date/Hour:HH == " + cycle + " and ( /" + model_suite + "/Date/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast == complete or ( /" + model_suite + "/Date/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast == active and /" + model_suite + "/Date/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast:hh >= " + str(lstnr) + " ) ) )", False)
+#                    if ensmbr == "det":
+#                        te.add_trigger("/" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast == complete or ( /" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast == active and /" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast:hh >=" + str(lstnr) + ")")
+#                    else:
+#                        te.add_trigger("/" + model_suite + "/Date/Hour/Cycle/Mbr" + ensmbr + "/Forecasting/Forecast == complete or ( /" + model_suite + "/Date/Hour/Cycle/Mbr" + ensmbr + "/Forecasting/Forecast == active and /" + model_suite + "/Date/Hour/Cycle/Mbr" + ensmbr + "/Forecasting/Forecast:hh >=" + str(lstnr) + ")")
 
 
         # Iterate cycle_i so we know which ll to pick from ll_list
@@ -167,7 +182,16 @@ for model_suite in model_suites:
     DOMAIN = os.environ[model_suite + '_DOMAIN']
     EXTRGRIB_LISTENERS = os.environ["EXTRGRIB_LISTENERS"]
     # Add externs
-    
+    ensmbrs = ENSMSEL_to_list(ENSMSEL)
+    defs.add_extern("/" + model_suite + "/Date:YMD")
+    defs.add_extern("/" + model_suite + "/Date/Hour:HH")
+    for ensmbr in ensmbrs:
+        if ensmbr == 'det':
+            defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast")
+            defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast:hh")
+        else:
+            defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Mbr" + str(ensmbr) + "/Forecasting/Forecast")
+            defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Mbr" + str(ensmbr) + "/Forecasting/Forecast:hh")
 
     fm.add_variable("EXP",     model_suite)
     fm.add_family(create_family_run())

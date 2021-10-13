@@ -71,7 +71,7 @@ export WORKPATH=%ARCHIVE_ROOT%/archive/extractGribFiles
 
 # loop over steps for this worker
 # This loop iterates over step n, n+$EXTRGRIB_WORKERS, n+(2 x $EXTRGRIB_WORKERS),  n+(3 x $EXTRGRIB_WORKERS), etc
-for STEP in $(seq %worker% $EXTRGRIB_WORKERS $max_ll ); do
+for STEP in $(seq %worker% $EXTRGRIB_WORKERS %MAX_LL% ); do
 
   # Extend the waitfor() timeout (seconds) for extractGrib
   WAITIMEOUT=$((180 * $STEP))

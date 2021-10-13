@@ -81,7 +81,7 @@ TASK=%TASK%             export TASK
 ECF_TRYNO=%ECF_TRYNO%   export ECF_TRYNO
 HH=%HH%                 export HH
 YMD=%YMD%               export YMD
-HARMLBCS=%HARMLBCS%     export HARMLBCS
+EXTRGRIB=%EXTRGRIB%     export EXTRGRIB
 EXP=%EXP%               export EXP
 # HH needs two characters. From that, define DTG etc
 HH=`echo %HH% | awk '{printf "%%2.2d",$1}'`
@@ -97,4 +97,4 @@ ECF_PARENT=$( perl -e "@_=split('/','$ECF_NAME');"'print $_[$#_-1]' )
 ECF_GRANDPARENT=$( perl -e "@_=split('/','$ECF_NAME');"'print $_[$#_-2]' )
 
 # Source config
-. %HARMLBCS%/share/config/config.%LBC_CONFIG%
+. %EXTRGRIB%/share/config/config.%EXTRGRIB_CONFIG%

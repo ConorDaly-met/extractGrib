@@ -24,6 +24,9 @@ ECF_HOME = os.environ["ECF_HOME"]
 # Where this project is installed
 EXTRGRIB = os.environ["EXTRGRIB"]
 
+# The config setting
+EXTRGRIB_CONFIG = os.environ["EXTRGRIB_CONFIG"]
+
 # Force replace suite
 FORCE = os.environ["FORCE"]
 
@@ -37,6 +40,8 @@ defs = ec.Defs()
 suite = defs.add_suite(SUITE_NAME)
 suite.add_variable("USER",           USER)
 suite.add_variable("SUITE_NAME",     SUITE_NAME)
+suite.add_variable("EXTRGRIB",       EXTRGRIB)
+suite.add_variable("EXTRGRIB_CONFIG", EXTRGRIB_CONFIG)
 suite.add_variable("ECF_HOME",       "%s"%ECF_HOME)
 suite.add_variable("ECF_INCLUDE",    "%s/etc/ecf"%EXTRGRIB)
 suite.add_variable("ECF_FILES",      "%s/etc/ecf"%EXTRGRIB)

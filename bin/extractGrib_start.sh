@@ -169,7 +169,7 @@ export SUITE_NAME="extractGrib"
 #export ECF_PORT="5518"
 export FORCE="True"
 
-export EXTRGRIB="$PERM/uwcwtest_repos/extractGrib"
+export EXTRGRIB=${EXTRGRIB-"$HOME/metapp/extractGrib"}
 export ECF_HOME="$HOME/ecflow_suites"
 
 source $EXTRGRIB/share/config/config.${EXTRGRIB_CONFIG}

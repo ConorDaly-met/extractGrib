@@ -99,7 +99,6 @@ def create_family_run():
     run = ec.Family("run")
     run.add_limit("par", 6)
     run.add_repeat(ec.RepeatDate("YMD",int(start_ymd), 20990101, 1))
-    run.add_trigger("/" + model_suite + "/Date:YMD >= :YMD")
     # For this experiment, recover the list of cycles HH_LIST
 #    HH_LIST = os.environ["HH_LIST"]
     # Split this (e.g. 00-18:6) into the range (e.g. 00-18) and the steps (e.g. 6)
@@ -115,7 +114,6 @@ def create_family_run():
     for cycle in cycle_list:
         fc = run.add_family(cycle).add_inlimit("par")
         fc.add_variable("HH", cycle)
-        fc.add_trigger("/" + model_suite + "/Date/Hour:HH >=" + cycle)
         null="null"
         # For this experiment, recover the list of ensemble members ENSMSEL
         ensmbrs = ENSMSEL_to_list(ENSMSEL)

@@ -214,6 +214,9 @@ if [ "${SNNAME}" == "shortName" ]; then
   SNKey="%shortname="
 elif [ "${SNNAME}" == "indicatorOfParameter" ]; then
   SNKey="%pid="
+elif [ -z "${SNNAME}" ]; then
+  echo "Error, failed to find column header"
+  exit 1
 fi
 LTKey="%levtype="
 TRKey="%tri="

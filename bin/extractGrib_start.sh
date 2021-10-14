@@ -203,8 +203,16 @@ do
         done
 
     fi
+    export "${model_suite}_HH_LIST="$HH_LIST""
     export "${model_suite}_ENSMSEL="$ENSMSEL""
     export "${model_suite}_DOMAIN="$DOMAIN""
+    if [ -s $HOME/hm_home/${model_suite}/progress.log ]
+	then
+		source $HOME/hm_home/${model_suite}/progress.log
+	else
+		DTG=$(date +%Y%m%d%H)
+	fi
+    export "${model_suite}_START_DTG="$DTG""
     source $EXTRGRIB/share/config/config.ecgb-cca
 done
 cd $EXTRGRIB/bin

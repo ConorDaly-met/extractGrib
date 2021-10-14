@@ -90,16 +90,18 @@ def ENSMSEL_to_list(ENSMSEL):
 def create_family_run():
     #### These variables should be sourced from HARMONIE expirement directory ###
     # Source HM_LIB/ecf/config_mbr${ENSMBR}.h 
-    start_ymd = "20211001" # From progress.log
+    #start_ymd = "20211013" # From progress.log
     #############################################################################
 
 
+    start_ymd = START_DTG[0:8]
+    #print("START_YMD =", start_ymd)
     run = ec.Family("run")
     run.add_limit("par", 6)
     run.add_repeat(ec.RepeatDate("YMD",int(start_ymd), 20990101, 1))
     run.add_trigger("/" + model_suite + "/Date:YMD >= :YMD")
     # For this experiment, recover the list of cycles HH_LIST
-    HH_LIST = os.environ["HH_LIST"]
+#    HH_LIST = os.environ["HH_LIST"]
     # Split this (e.g. 00-18:6) into the range (e.g. 00-18) and the steps (e.g. 6)
     HH_LIST_range, HH_LIST_steps = HH_LIST.split(':')
     # Construct a list object consisting of each valid cycle
@@ -179,8 +181,10 @@ def create_family_maint():
 for model_suite in model_suites:
     fm = suite.add_family(model_suite)
     # Recover ensemble list ENSMSEL
+    HH_LIST = os.environ[model_suite + '_HH_LIST']
     ENSMSEL = os.environ[model_suite + '_ENSMSEL']
     DOMAIN = os.environ[model_suite + '_DOMAIN']
+    START_DTG = os.environ[model_suite + '_START_DTG']
     EXTRGRIB_WORKERS = os.environ["EXTRGRIB_WORKERS"]
     # Add externs
     ensmbrs = ENSMSEL_to_list(ENSMSEL)
@@ -224,18 +228,30 @@ print("loading on %s@%s" %(ECF_HOST,ECF_PORT))
 client.suspend("/%s" %suite.name())
 # Begin the suite
 client.begin_suite("/%s" % suite.name(), True)
-exit(0)
+#exit(0)
 # Mark all HH before start_hh complete
-if int(start_hh) > 0:
-    for h in range (0,int(start_hh),6):
-        hh = str(h).zfill(2)
-        print("mark complete:", hh)
-        for lbc_stream in lbc_streams:
-            client.force_state_recursive("/%s/%s/run/%s" %(suite.name(), lbc_stream, hh), ec.State.complete)
-            client.force_state_recursive("/%s/%s/maint/clean/%s" %(suite.name(), lbc_stream, hh), ec.State.complete)
-            if os.environ["ARCHIVE"] == "yes":
-                client.force_state_recursive("/%s/%s/maint/archive/%s" %(suite.name(), lbc_stream, hh), ec.State.complete)
-
+for model_suite in model_suites:
+    START_DTG = os.environ[model_suite + '_START_DTG']
+    start_hh = START_DTG[8:10]
+    # For this experiment, recover the list of cycles HH_LIST
+    HH_LIST = os.environ[model_suite + '_HH_LIST']
+    # Split this (e.g. 00-18:6) into the range (e.g. 00-18) and the steps (e.g. 6)
+    HH_LIST_range, HH_LIST_steps = HH_LIST.split(':')
+    # Construct a list object consisting of each valid cycle
+    hh_list = sum(((list(range(*[int(b) + c
+        for c, b in enumerate(a.split('-'))], int(HH_LIST_steps)))
+        if '-' in a else [int(a)]) for a in HH_LIST_range.split(',')), [])
+    # Pad this list to have leading zeroes, i.e. 0 -> 00 etc
+    cycle_list = [str(cycle).zfill(2) for cycle in hh_list]
+    if int(start_hh) > 0:
+        for cycle in cycle_list:
+            if int(cycle) < int(start_hh):
+                print("mark complete:", cycle)
+                client.force_state_recursive("/%s/%s/run/%s" %(suite.name(), model_suite, cycle), ec.State.complete)
+            #client.force_state_recursive("/%s/%s/maint/clean/%s" %(suite.name(), model_suite, cycle), ec.State.complete)
+            #if os.environ["ARCHIVE"] == "yes":
+            #    client.force_state_recursive("/%s/%s/maint/archive/%s" %(suite.name(), lbc_stream, cycle), ec.State.complete)
+exit(0)
 # Resume the suite
 client.resume("/%s" %suite.name())
 

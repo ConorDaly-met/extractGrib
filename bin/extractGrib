@@ -427,13 +427,16 @@ fi
 	    mkdir -p ${LOGDIR}
     fi
   
+    STATUS=0
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++"
     echo "$(date) : Starting ${extractcmd}"
     echo "Log: ${LOG}"
     pwd
     echo
     ${extractcmd} > ${LOG} 2>&1
+    STATUS=$?
     echo
     echo "$(date) : Finished ${extractcmd}"
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    exit $STATUS
 

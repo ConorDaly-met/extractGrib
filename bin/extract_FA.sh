@@ -285,6 +285,7 @@ done
 
 merge_pppkey ${NAMELIST}
 
+STATUS=0
 #CMD="$GL -p -n ${NAMELIST} $INFILE"
 CMD="$GL -timing -igd -p -n ${NAMELIST}"
 if [ $DRYRUN != true ]; then
@@ -319,3 +320,4 @@ if [ $KEEPNAM == true ]; then
 else
   rm ${NAMELIST}
 fi
+exit $STATUS

@@ -35,7 +35,7 @@ if [ $? -eq 0 ]; then
   COMPTYPE=${COMPTYPE-gnu}
 fi
 
- if [ -f $SCRATCH/hm_home/$EXP/lib/config-sh/config.${CFGSH} ${COMPTYPE} ]; then
+ if [ -f $SCRATCH/hm_home/$EXP/lib/config-sh/config.${CFGSH} ]; then
    source $SCRATCH/hm_home/$EXP/lib/config-sh/config.${CFGSH} ${COMPTYPE}
  fi
 

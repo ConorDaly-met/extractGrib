@@ -80,6 +80,12 @@ for STEP in $(seq %worker% $EXTRGRIB_WORKERS %MAX_LL% ); do
 
   extractGrib ${extgrib_flags} || exit 1
 
+  # Update the meter
+  ecflow_client --meter=STEP $STEP
+
+  # Output some job accounting.  This will be cumulative over the loop.
+  eoj
+
 done
 
 %include <tail.h>

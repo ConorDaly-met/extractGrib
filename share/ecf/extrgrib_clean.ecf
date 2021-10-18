@@ -1,0 +1,60 @@
+%include <%SUB_H%>
+%include <head.h>
+
+%manual
+extrgrib_clean.ecf 
+
+REFERENCE:
+    https://uwcwgltest.dmi.dk/iecd/extractGrib
+
+DESCRIPTION:
+    A wrapper for the extrgrib_clean.sh script
+
+1ST LINE:
+    Instructions for "1st line" operators.
+
+    extrgrib_clean is a maintenance task and is not operationally significant.
+
+2ND LINE:
+    Instructions for "2nd line" on-call team.
+
+%end
+set -x
+# load the extractGrib module
+module use /home/ms/ie/duuw/privatemodules/
+echo $MODULEPATH
+#module load use.own
+module load extractGrib
+
+# extrgrib_cleanup.sh expects DTG and WORKPATH
+
+# Ensemble member extends WORKPATH
+ENSMBR=%ENSMBR%
+MBRPATH=mbr$ENSMBR
+
+# Adjust MBRPATH if running in deterministic mode
+if [ "$ENSMBR" == "det" ]
+then
+    MBRPATH=.
+fi
+
+export DTG=%YMD%%HH%
+export WORKPATH=%ARCHIVE_ROOT%/extractGribFiles/$MBRPATH
+
+# Lets make the ECF_JOB info available also
+export ECF_JOB=%ECF_JOB%
+export ECF_TRYNO=%ECF_TRYNO%
+
+  extrgrib_clean.sh || exit 1
+
+  # Output some job accounting.  This will be cumulative over the loop.
+  eoj
+
+done
+
+%include <tail.h>
+
+%comment
+$Id$
+%end
+

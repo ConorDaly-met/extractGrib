@@ -440,7 +440,7 @@ fi
     else
         echo -n > ${LOG}
     fi
-    ${extractcmd} > ${LOG} 2>&1
+    ${extractcmd} >> ${LOG} 2>&1
     STATUS=$?
     echo
     echo "$(date) : Finished ${extractcmd}"

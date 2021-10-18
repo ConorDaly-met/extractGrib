@@ -155,7 +155,9 @@ def create_family_run():
                     else:
                         trigger_mbr = "Mbr" + mbr + "/"
                     te = fl.add_task("extract_grib")
-                    meter = ec.Meter("STEP",-1,int(max_ll),int(max_ll))
+                    mdx = (int(max_ll) - int(wrkr)) % int(EXTRGRIB_WORKERS)
+                    mx = int(max_ll) - mdx
+                    meter = ec.Meter("STEP",-1,mx,mx)
                     te.add_meter(meter)
                     # Trigger when model forecast YMD > extractGrib YMD
                     te.add_trigger("/" + model_suite + "/Date:YMD > ../../../../run:YMD")

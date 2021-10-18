@@ -439,6 +439,7 @@ fi
     echo
     if [ ! -z "$ECF_JOB" ]; then
         echo -n "ECF_JOBID: " > ${LOG}
+        ECF_JOB=$(echo ${ECF_JOB} | sed -e 's@/hpc@@')
         cat ${ECF_JOB}.sub >> ${LOG}
     else
         echo -n > ${LOG}

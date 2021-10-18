@@ -71,6 +71,7 @@ export WORKPATH=%ARCHIVE_ROOT%/extractGribFiles
 
 # Lets make the ECF_JOB info available also
 export ECF_JOB=%ECF_JOB%
+export ECF_TRYNO=%ECF_TRYNO%
 
 # loop over steps for this worker
 # This loop iterates over step n, n+$EXTRGRIB_WORKERS, n+(2 x $EXTRGRIB_WORKERS),  n+(3 x $EXTRGRIB_WORKERS), etc

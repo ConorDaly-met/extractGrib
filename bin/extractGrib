@@ -423,7 +423,10 @@ if [ ${ENSMBR} == "000" ]; then
 fi
     extractcmd+=" -o ${MBRPATH}"
     LOGDIR=${MBRPATH}/log
-    LOG=${LOGDIR}/extractGrib_${listtype}_${DD}${HH}_${STEP}.log 
+    if [ ! -z "${ECF_TRYNO}" ]; then
+        ECFTRYNO="_${ECF_TRYNO}"
+    fi
+    LOG=${LOGDIR}/extractGrib_${listtype}_${YMD}${HH}_${STEP}${ECFTRYNO}.log 
     if [ ! -d ${LOGDIR} ]; then
 	    mkdir -p ${LOGDIR}
     fi

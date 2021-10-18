@@ -347,6 +347,7 @@ export USERAREA
 
 # Date time step handling
 YMD=$(echo $DTG | cut -c1-8)
+DD=$(echo $DTG | cut -c7-8)
 HH=$(echo $DTG | cut -c9-10)
 if [ "$GETIOSERV" == "yes" ]; then
 	FCSTPATH+="/${YMD}_${HH}"
@@ -422,7 +423,7 @@ if [ ${ENSMBR} == "000" ]; then
 fi
     extractcmd+=" -o ${MBRPATH}"
     LOGDIR=${MBRPATH}/log
-    LOG=${LOGDIR}/extractGrib_${listtype}_${STEP}.log 
+    LOG=${LOGDIR}/extractGrib_${listtype}_${DD}${HH}_${STEP}.log 
     if [ ! -d ${LOGDIR} ]; then
 	    mkdir -p ${LOGDIR}
     fi
@@ -433,6 +434,12 @@ fi
     echo "Log: ${LOG}"
     pwd
     echo
+    if [ ! -z "$ECF_JOB" ]; then
+        echo -n "ECF_JOBID: " > ${LOG}
+        cat ${ECF_JOB}.sub >> ${LOG}
+    else
+        echo -n > ${LOG}
+    fi
     ${extractcmd} > ${LOG} 2>&1
     STATUS=$?
     echo

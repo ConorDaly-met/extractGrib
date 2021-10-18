@@ -69,6 +69,9 @@ export FCSTPATH=%ARCHIVE_ROOT%/$YY/$MM/$DD/$HH/$MBRPATH
 export DTG=%YMD%%HH%
 export WORKPATH=%ARCHIVE_ROOT%/extractGribFiles
 
+# Lets make the ECF_JOB info available also
+export ECF_JOB=%ECF_JOB%
+
 # loop over steps for this worker
 # This loop iterates over step n, n+$EXTRGRIB_WORKERS, n+(2 x $EXTRGRIB_WORKERS),  n+(3 x $EXTRGRIB_WORKERS), etc
 for STEP in $(seq %worker% $EXTRGRIB_WORKERS %MAX_LL% ); do

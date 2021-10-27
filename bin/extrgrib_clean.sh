@@ -36,6 +36,6 @@ echo "Clean up files for DTG : "$DTG
 # Forecast files
 cleanDir ${WORKPATH}/         "fc${DTG}*"
 # Log files
-cleanDir ${WORKPATH}/log/     "extractGrib_*_${DTG}_*.log"
+cleanDir ${WORKPATH}/log/     "extractGrib_*_${DTG}*.log"
 
 

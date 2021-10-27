@@ -27,8 +27,15 @@ EXTRGRIB = os.environ["EXTRGRIB"]
 # The config setting
 EXTRGRIB_CONFIG = os.environ["EXTRGRIB_CONFIG"]
 
+# How long to wait before cleaning
+KEEP_DAYS = os.environ["KEEP_DAYS"]
+
 # Force replace suite
 FORCE = os.environ["FORCE"]
+
+START_DTG = os.environ["START_DTG"]
+start_ymd = START_DTG[0:8]
+start_hh = START_DTG[8:10]
 
 # Recover the bash variable determining which models to process
 MODEL_SUITES = os.environ["MODEL_SUITES"]
@@ -70,6 +77,7 @@ if "ecgb" in CLUSTER:
     suite.add_variable("ECF_INCLUDE",       "/hpc%s/share/ecf"%EXTRGRIB)
     suite.add_variable("ECF_FILES",         "/hpc%s/share/ecf"%EXTRGRIB)
     suite.add_variable("SUB_H",             "qsub.h")
+    suite.add_variable("SUBCLEAN_H",        "qsub_clean.h")
 
 
 def ENSMSEL_to_list(ENSMSEL):
@@ -85,22 +93,9 @@ def ENSMSEL_to_list(ENSMSEL):
         ensmbrs = [str(mbr).zfill(3) for mbr in ensmsel]
     return ensmbrs
 
-# The run family should contain the operational functionality of the suite
-# If a task in run aborts, operators will be instructed to intervene
-def create_family_run():
-    #### These variables should be sourced from HARMONIE expirement directory ###
-    # Source HM_LIB/ecf/config_mbr${ENSMBR}.h 
-    #start_ymd = "20211013" # From progress.log
-    #############################################################################
-
-
-    start_ymd = START_DTG[0:8]
-    #print("START_YMD =", start_ymd)
-    run = ec.Family("run")
-    run.add_limit("par", 6)
-    run.add_repeat(ec.RepeatDate("YMD",int(start_ymd), 20990101, 1))
-    # For this experiment, recover the list of cycles HH_LIST
-#    HH_LIST = os.environ["HH_LIST"]
+# Generate a list of cycles
+def make_cycle_list():
+    HH_LIST = os.environ["HH_LIST"]
     # Split this (e.g. 00-18:6) into the range (e.g. 00-18) and the steps (e.g. 6)
     HH_LIST_range, HH_LIST_steps = HH_LIST.split(':')
     # Construct a list object consisting of each valid cycle
@@ -110,99 +105,204 @@ def create_family_run():
     # Pad this list to have leading zeroes, i.e. 0 -> 00 etc
     cycle_list = [str(cycle).zfill(2) for cycle in hh_list]
 
+    return cycle_list
+
+# create family cycles
+def create_family_cycles(node, model_suite, node_type, deltadays):
+    cycle_list = make_cycle_list()
+
     cycle_i = 0
     for cycle in cycle_list:
-        fc = run.add_family(cycle).add_inlimit("par")
-        fc.add_variable("HH", cycle)
-        null="null"
-        # For this experiment, recover the list of ensemble members ENSMSEL
-        ensmbrs = ENSMSEL_to_list(ENSMSEL)
-
-        # Iterate over each ensemble member
-        for mbr in ensmbrs:
-            # Retrieve the LL_LIST for this member
-            LL_LIST = os.environ[model_suite + "_mbr" + mbr + "_LL_LIST"]
-            LL_LIST = LL_LIST.split(",")
-
-            # LL_LIST determines the LL for this particular member and cycle
-            # Expand the LL_LIST to the length of cycle_list
-            q, r = divmod(len(cycle_list), len(LL_LIST))
-            ll_list = q * LL_LIST + LL_LIST[:r]
-            # Get the ll for this member/cycle using the cycle_i iterator
-            max_ll = ll_list[cycle_i]
-    
-            archive_root = os.environ[model_suite + "_mbr" + mbr + "_ARCHIVE_ROOT"]
-
-            fm = fc.add_family("mbr"+mbr)
-            # Update variables required for extractGrib
-            fm.add_variable("FCSTPATH",     archive_root) # This is $ARCHIVE
-            fm.add_variable("EXP",          model_suite)
-            fm.add_variable("DOMAIN",       DOMAIN)
-            fm.add_variable("EZONE",        null)
-            fm.add_variable("DTG",          null)
-            fm.add_variable("STEP",         null)
-            fm.add_variable("ENSMBR",       mbr)
-            fm.add_variable("MAX_LL",       max_ll)
-            fm.add_variable("EXTRGRIB_WORKERS",       EXTRGRIB_WORKERS)
-            fm.add_variable("ARCHIVE_ROOT", archive_root)
-
-            for wrkr in range(0, int(EXTRGRIB_WORKERS)):
-                if (int(wrkr) <= int(max_ll)):
-                    fl = fm.add_family('worker' + str(wrkr))
-                    fl.add_variable("worker",    wrkr)
-                    if ensmbr == "det":
-                        trigger_mbr = ""
-                    else:
-                        trigger_mbr = "Mbr" + mbr + "/"
-                    te = fl.add_task("extract_grib")
-                    mdx = (int(max_ll) - int(wrkr)) % int(EXTRGRIB_WORKERS)
-                    mx = int(max_ll) - mdx
-                    meter = ec.Meter("STEP",-1,mx,mx)
-                    te.add_meter(meter)
-                    # Trigger when model forecast YMD > extractGrib YMD
-                    te.add_trigger("/" + model_suite + "/Date:YMD > ../../../../run:YMD")
-                    # Trigger when model forecast YMD = extractGrib YMD, but model forecast HH > extractGrib HH
-                    te.add_part_trigger("( /" + model_suite + "/Date:YMD == ../../../../run:YMD and /" + model_suite + "/Date/Hour:HH > " + cycle + " )", False)
-                    # Trigger when model forecast DTG = extractGrib DTG, and model forecast is complete
-                    te.add_part_trigger("( /" + model_suite + "/Date:YMD == ../../../../run:YMD and /" + model_suite + "/Date/Hour:HH == " + cycle + " and ( /" + model_suite + "/Date/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast == complete or ( /" + model_suite + "/Date/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast == active and /" + model_suite + "/Date/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast:hh >= " + str(wrkr) + " ) ) )", False)
-
-
+        fc = create_family_cycle(node, cycle)
+        create_family_members(fc, model_suite, node_type, cycle, cycle_i, deltadays)
         # Iterate cycle_i so we know which ll to pick from ll_list
         cycle_i = cycle_i + 1
+
+# create individual cycles
+def create_family_cycle(node, cycle):
+    fc = node.add_family(cycle).add_inlimit("par")
+    fc.add_variable("HH", cycle)
+    return fc
+
+# create individual members
+def create_family_member(node, mbr, model_suite, node_type):
+    null="null"
+    archive_root = os.environ[model_suite + "_mbr" + mbr + "_ARCHIVE_ROOT"]
+    fm = node.add_family("mbr"+mbr)
+    # Update variables required for extractGrib
+    DOMAIN = os.environ[model_suite + '_DOMAIN']
+    EXTRGRIB_WORKERS = os.environ["EXTRGRIB_WORKERS"]
+    fm.add_variable("FCSTPATH",     archive_root) # This is $ARCHIVE
+    fm.add_variable("EXP",          model_suite)
+    fm.add_variable("DOMAIN",       DOMAIN)
+    fm.add_variable("EZONE",        null)
+    fm.add_variable("DTG",          null)
+    fm.add_variable("STEP",         null)
+    fm.add_variable("ENSMBR",       mbr)
+    fm.add_variable("EXTRGRIB_WORKERS",       EXTRGRIB_WORKERS)
+    fm.add_variable("ARCHIVE_ROOT", archive_root)
+
+    return fm
+
+# Create family members
+def create_family_members(node, model_suite, node_type, cycle, cycle_i, deltadays):
+    ENSMSEL = os.environ[model_suite + '_ENSMSEL']
+    ensmbrs = ENSMSEL_to_list(ENSMSEL)
+    for mbr in ensmbrs:
+        fm = create_family_member(node, mbr, model_suite, node_type)
+        create_family_workers(fm, mbr, model_suite, node_type, cycle, cycle_i, deltadays)
+    
+# Create family workers
+def create_family_workers(node, mbr, model_suite, node_type, cycle, cycle_i, deltadays):
+    NUM_WORKERS = 1
+    max_ll = 0
+    if(node_type == "run"):
+        # Retrieve the LL_LIST for this member
+        LL_LIST = os.environ[model_suite + "_mbr" + mbr + "_LL_LIST"]
+        LL_LIST = LL_LIST.split(",")
+        # LL_LIST determines the LL for this particular member and cycle
+        # Expand the LL_LIST to the length of cycle_list
+        q, r = divmod(len(make_cycle_list()), len(LL_LIST))
+        ll_list = q * LL_LIST + LL_LIST[:r]
+        # Get the ll for this member/cycle using the cycle_i iterator
+        max_ll = ll_list[cycle_i]
+        NUM_WORKERS = os.environ["EXTRGRIB_WORKERS"]
+        node.add_variable("MAX_LL",       max_ll)
+
+    for wrkr in range(0, int(NUM_WORKERS)):
+        if (int(wrkr) <= int(max_ll)):
+            fw = create_family_worker(node, wrkr, model_suite, node_type)
+            te = create_task(fw, node_type, max_ll, wrkr, NUM_WORKERS, model_suite, cycle, mbr, deltadays)
+    
+# Create the individual workers
+def create_family_worker(node, wrkr, model_suite, node_type):
+    fw = node.add_family('worker' + str(wrkr))
+    fw.add_variable("worker",    wrkr)
+
+    return fw
+
+# Create the task
+def create_task(node, node_type, max_ll, wrkr, numwrkr, model_suite, cycle, mbr, deltadays):
+    if(node_type == "run"):
+        task = "extract_grib"
+    if(node_type == "clean"):
+        task = "extrgrib_clean"
+    if(node_type == "archive"):
+        task = "extrgrib_archive"
+
+    te = node.add_task(task)
+
+    # Add a meter to 'run' node
+    if(node_type == "run"):
+        mdx = (int(max_ll) - int(wrkr)) % int(numwrkr)
+        mx = int(max_ll) - mdx
+        meter = ec.Meter("STEP",-1,mx,mx)
+        te.add_meter(meter)
+
+    create_trigger(te, node_type, model_suite, cycle, mbr, wrkr, deltadays)
+
+
+    return te
+
+# Create the triggers
+def create_trigger(node, node_type, model_suite, cycle, mbr, wrkr, deltadays):
+    if mbr == "det":
+        trigger_mbr = ""
+        defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast")
+        defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast:hh")
+    else:
+        trigger_mbr = "Mbr" + mbr + "/"
+        defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Mbr" + str(mbr) + "/Forecasting/Forecast")
+        defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Mbr" + str(mbr) + "/Forecasting/Forecast:hh")
+    # Trigger when model forecast YMD > extractGrib YMD
+    trigger_source = "/" + model_suite + "/Date"
+    trigger_compare="../../../../../../run/%s/Date" %(model_suite)
+    trigger_delta = " + %s" %(deltadays)
+    if(node_type == "run"):
+        trigger_compare=""
+    if(node_type == "clean"):
+        trigger_source=""
+    if(node_type == "run"):
+        # Trigger when model forecast YMD > extractGrib YMD
+        node.add_trigger(trigger_source + ":YMD" + trigger_delta + " > " + trigger_compare + ":YMD")
+        # Trigger when model forecast YMD = extractGrib YMD, but model forecast HH > extractGrib HH
+        node.add_part_trigger("( " + trigger_source + ":YMD" + trigger_delta + " == " + trigger_compare + ":YMD and " + trigger_source + "/Hour:HH > " + cycle + " )", False)
+        # Trigger when model forecast DTG = extractGrib DTG, and model forecast is complete
+        node.add_part_trigger("( " + trigger_source + ":YMD" + trigger_delta + " == " + trigger_compare + ":YMD and " + trigger_source + "/Hour:HH == " + cycle + " and ( " + trigger_source + "/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast == complete or ( " + trigger_source + "/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast == active and " + trigger_source + "/Hour/Cycle/" + trigger_mbr + "Forecasting/Forecast:hh >= " + str(wrkr) + " ) ) )", False)
+    if(node_type == "clean"):
+        # Trigger when clean YMD+7 < extractGrib YMD
+        node.add_trigger(trigger_source + ":YMD" + trigger_delta + " < " + trigger_compare + ":YMD")
+        # Trigger when clean YMD+7 == extractGrib YMD, and extractGrib HH is complete
+        node.add_part_trigger("( " + trigger_source + ":YMD" + trigger_delta + " == " + trigger_compare + ":YMD and " + trigger_compare + "/" + cycle + " == complete )", False)
+
+
+    
+# The run family should contain the operational functionality of the suite
+# If a task in run aborts, operators will be instructed to intervene
+def create_family_run():
+    #### These variables should be sourced from HARMONIE expirement directory ###
+    # Source HM_LIB/ecf/config_mbr${ENSMBR}.h 
+    #start_ymd = "20211013" # From progress.log
+    #############################################################################
+
+
+    #print("START_YMD =", start_ymd)
+    run = ec.Family("run")
+    deltadays = 0
+    # Create the families in the suite
+    for model_suite in model_suites:
+        fm = create_family_model(run, model_suite)
+        fy = create_family_ymd(fm, 'Date', deltadays)
+        create_family_cycles(fy, model_suite, "run", deltadays)
+
     return run
+
+def create_family_ymd(node, fname, deltadays):
+    fm = node.add_family(fname)
+    fm.add_limit("par", 6)
+    if(deltadays == 0):
+        fm.add_repeat(ec.RepeatDate("YMD",int(start_ymd), 20990101, 1))
+    else:
+        # Figure out what date to start the cycle
+        start_ymd_object = datetime.strptime(str(start_ymd), "%Y%m%d")
+        fname_start_ymd_object = start_ymd_object - timedelta(days = int(deltadays))
+        fname_start_ymd = fname_start_ymd_object.strftime("%Y%m%d")
+        # Add a repeat over YMD
+        fm.add_repeat(ec.RepeatDate("YMD",int(fname_start_ymd), 20990101, 1))
+
+    return fm
+
+def create_family_model(node, model_suite):
+    fm = node.add_family(model_suite)
+    #fm.add_limit("par", 6)
+    #fm.add_repeat(ec.RepeatDate("YMD",int(start_ymd), 20990101, 1))
+    # Recover ensemble list ENSMSEL
+    HH_LIST = os.environ[model_suite + '_HH_LIST']
+    #ENSMSEL = os.environ[model_suite + '_ENSMSEL']
+    START_DTG = os.environ[model_suite + '_START_DTG']
+    # Add externs
+    #ensmbrs = ENSMSEL_to_list(ENSMSEL)
+    defs.add_extern("/" + model_suite + "/Date:YMD")
+    defs.add_extern("/" + model_suite + "/Date/Hour:HH")
+    fm.add_variable("EXP",     model_suite)
+
+    return fm
 
 # The maintenance family should contain housekeeping tasks such as deleting
 # old files, cleaning working directories, archiving etc.
 # If a task in maint aborts, operators will issue a next working day request
 def create_family_maint():
     maint= ec.Family("maint")
-    maint.add_limit("par", 6)
+    # Create the families in the suite
+    for model_suite in model_suites:
+        fm = create_family_model(maint, model_suite)
+        fy = create_family_ymd(fm, 'clean', KEEP_DAYS)
+        create_family_cycles(fy, model_suite, "clean", KEEP_DAYS)
     return maint
 
-# Create the families in the suite
-for model_suite in model_suites:
-    fm = suite.add_family(model_suite)
-    # Recover ensemble list ENSMSEL
-    HH_LIST = os.environ[model_suite + '_HH_LIST']
-    ENSMSEL = os.environ[model_suite + '_ENSMSEL']
-    DOMAIN = os.environ[model_suite + '_DOMAIN']
-    START_DTG = os.environ[model_suite + '_START_DTG']
-    EXTRGRIB_WORKERS = os.environ["EXTRGRIB_WORKERS"]
-    # Add externs
-    ensmbrs = ENSMSEL_to_list(ENSMSEL)
-    defs.add_extern("/" + model_suite + "/Date:YMD")
-    defs.add_extern("/" + model_suite + "/Date/Hour:HH")
-    for ensmbr in ensmbrs:
-        if ensmbr == 'det':
-            defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast")
-            defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Forecasting/Forecast:hh")
-        else:
-            defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Mbr" + str(ensmbr) + "/Forecasting/Forecast")
-            defs.add_extern("/" + model_suite + "/Date/Hour/Cycle/Mbr" + str(ensmbr) + "/Forecasting/Forecast:hh")
-
-    fm.add_variable("EXP",     model_suite)
-    fm.add_family(create_family_run())
-    fm.add_family(create_family_maint())
+suite.add_family(create_family_run())
+suite.add_family(create_family_maint())
+#create_family_maint()
 
 # Define a client object with the target ecFlow server
 client = ec.Client(ECF_HOST, ECF_PORT)
@@ -249,7 +349,7 @@ for model_suite in model_suites:
         for cycle in cycle_list:
             if int(cycle) < int(start_hh):
                 print("mark complete:", cycle)
-                client.force_state_recursive("/%s/%s/run/%s" %(suite.name(), model_suite, cycle), ec.State.complete)
+                client.force_state_recursive("/%s/run/%s/Date/%s" %(suite.name(), model_suite, cycle), ec.State.complete)
             #client.force_state_recursive("/%s/%s/maint/clean/%s" %(suite.name(), model_suite, cycle), ec.State.complete)
             #if os.environ["ARCHIVE"] == "yes":
             #    client.force_state_recursive("/%s/%s/maint/archive/%s" %(suite.name(), lbc_stream, cycle), ec.State.complete)

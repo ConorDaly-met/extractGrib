@@ -1,4 +1,4 @@
-%include <%SUB_H%>
+%include <%SUBCLEAN_H%>
 %include <head.h>
 
 %manual
@@ -19,7 +19,7 @@ DESCRIPTION:
     Instructions for "2nd line" on-call team.
 
 %end
-set -x
+#set -x
 # load the extractGrib module
 module use /home/ms/ie/duuw/privatemodules/
 echo $MODULEPATH
@@ -47,10 +47,8 @@ export ECF_TRYNO=%ECF_TRYNO%
 
   extrgrib_clean.sh || exit 1
 
-  # Output some job accounting.  This will be cumulative over the loop.
-  eoj
-
-done
+  # Output some job accounting.  
+  #eoj
 
 %include <tail.h>
 

@@ -19,13 +19,13 @@ ${bold}NAME${normal}
         ${PROGNAME} - Start a new HARMONIE EXTRGRIB processing suite
 
 ${bold}USAGE${normal}
-        ${PROGNAME} -e <harmlbc-name> -c <configuration> -l <install location> -s DTG [ -h ]
+        ${PROGNAME} -e <suite-name> -c <configuration> -l <install location> -s DTG [ -h ]
 
 ${bold}DESCRIPTION${normal}
         Script to start new EXTRGRIB processing suite
 
 ${bold}OPTIONS${normal}
-        -r ${unline}harmlbc-name${normal}
+        -e ${unline}suite-name${normal}
            Name for your Harmonie EXTRGRIB processing suite
 
         -c ${unline}system-configuration${normal}
@@ -45,12 +45,12 @@ USAGE
 # Default host is reaserve
 default_config="METIE.LinuxRH7gnu"
 
-# Default experiment name is process_lbcs
+# Default experiment name is cca_dini25a_l90_arome
 # This can be changed with the -e flag to set up a parallel experiment in the
 # same ecFlow server
-default_exp="process_lbcs"
+default_exp="cca_dini25a_l90_arome"
 
-START_DTG=$(date +%Y%m%d%H)
+export START_DTG=$(date +%Y%m%d%H)
 
 # The location of this script
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -87,7 +87,7 @@ while test $# -gt 0; do
       fi
       shift
       ;;
-    -s|--start) # DTG to start. By defualt, it follows the operational schedule
+    -s|--start) # DTG to start. By default, it follows the operational schedule
       shift
       if test $# -gt 0; then
         export START_DTG=$1
@@ -163,7 +163,7 @@ cd ${EXTRGRIB_DATA}
 #module load ecflow/gnu-7.3.1/5.5.3
 #source ../share/config/config.ecgb-cca
 #set -x
-export SUITE_NAME="extractGrib"
+export SUITE_NAME=${SUITE_NAME-extractGrib}
 
 #export ECF_HOST="reaserve"
 #export ECF_PORT="5518"
@@ -213,7 +213,9 @@ do
 		DTG=$(date +%Y%m%d%H)
 	fi
     export "${model_suite}_START_DTG="$DTG""
+    export KEEP_DAYS=7
     source $EXTRGRIB/share/config/config.ecgb-cca
 done
 cd $EXTRGRIB/bin
 python3 create_suite.py
+echo "Installed Suite: ${SUITE_NAME}"

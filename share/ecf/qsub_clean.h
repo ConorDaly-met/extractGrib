@@ -1,13 +1,12 @@
 # Specific HPC commands go here
-# This header is for resource-intensive extraction tasks
-# use qsub_clean.h for low-resource cleaning tasks
-#PBS -q nf
+# This header is for low-resource cleaning tasks
+# use qsub.h for resource-intensive extraction tasks
+#PBS -q ns
 #PBS -l EC_total_tasks=1
 #PBS -l EC_tasks_per_node=1
-#PBS -l EC_memory_per_task=70000MB 
 #PBS -A uwcwecds
-#PBS -v OMP_NUM_THREADS=12
-#PBS -l EC_threads_per_task=12
+#PBS -v OMP_NUM_THREADS=1
+#PBS -l EC_threads_per_task=1
 #PBS -j oe
 #PBS -N %TASK%
 #PBS -m n

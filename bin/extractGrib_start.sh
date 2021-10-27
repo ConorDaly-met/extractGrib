@@ -213,7 +213,7 @@ do
 		DTG=$(date +%Y%m%d%H)
 	fi
     export "${model_suite}_START_DTG="$DTG""
-    export KEEP_DAYS=7
+    export KEEP_DAYS=${KEEP_DAYS-7}
     source $EXTRGRIB/share/config/config.ecgb-cca
 done
 cd $EXTRGRIB/bin

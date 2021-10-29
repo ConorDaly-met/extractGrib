@@ -38,7 +38,9 @@ then
     MBRPATH=.
 fi
 
+# extrgrib_clean.sh expects environment vars DTG, WORKPATH and, optionally KEEP_DAYS
 export DTG=%YMD%%HH%
+export KEEP_DAYS=%KEEP_DAYS%
 export WORKPATH=%ARCHIVE_ROOT%/extractGribFiles/$MBRPATH
 
 # Lets make the ECF_JOB info available also

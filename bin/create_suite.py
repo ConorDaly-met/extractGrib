@@ -55,6 +55,7 @@ suite.add_variable("ECF_FILES",      "%s/etc/ecf"%EXTRGRIB)
 suite.add_variable("TASK",           "")
 suite.add_variable("YMD",            "")
 suite.add_variable("HH",             "")
+suite.add_variable("KEEP_DAYS",      KEEP_DAYS)
 suite.add_variable("SUB_H",          "sub.h")
 
 # If running at ECMWF, use the schedule script

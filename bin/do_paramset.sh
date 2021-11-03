@@ -31,6 +31,9 @@ if [ $# -lt 3 ]; then
 fi
 
 DDSET='-d -p'
+DDSET='-p'
+FASET='P I'
+FASET='B'
 while [ $# -gt 1 ]; do
 	case "$1" in
 		-h)
@@ -73,7 +76,7 @@ fi
 OPREFIX=${NAMELISTPATH}/30-${NAMELIST}
 
 for DD in $DDSET; do
-	for FA in B P I; do
+	for FA in $FASET; do
 			O=${OPREFIX}_${FA}${DD}.inc
 			${bindir}/read_paramlist.sh ${DD} -${FA} ${PARAMLIST} > $O
 			if [ $? -ne 0 ]; then

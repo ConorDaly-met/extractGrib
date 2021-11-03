@@ -9,7 +9,7 @@ if [ "$REL" != "/" ]; then
   bindir=$(pwd)/$bindir
 fi
 #echo $bindir
-rulesdir=${bindir}/../etc/rules
+rulesdir=${bindir}/../share/rules
 NAMELISTSUBDOMAINBASE=${rulesdir}/rp_src.inc
 NAMELISTPOINTSBASE=${rulesdir}/point_src.inc
 

@@ -38,7 +38,7 @@ grib_dump $INFILE | head -n 180 \
 	      -e 's/longitudeOfSouthernPoleInDegrees = \([-0-9.]*\)/outgeo%polon = \1./' \
 	      -e 's/latitudeOfFirstGridPointInDegrees = \([-0-9.]*\)/outgeo%south = \1./' \
 	      -e 's/longitudeOfFirstGridPointInDegrees = \([-0-9.]*\)/outgeo%west = \1./' \
-	      -e 's/LoVInDegrees = \([0-9]*\)/outgeo%projlon = \1./' \
+	      -e 's/LoVInDegrees = \([-0-9.]*\)/outgeo%projlon = \1./' \
 	      -e 's/;//' -e 's/\(\.[0-9]*\)\./\1/' > grib_proj$$
 
 wlon=$(grep 'outgeo%west' grib_proj$$ | cut -f2 -d=)
